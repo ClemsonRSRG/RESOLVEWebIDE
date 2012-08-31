@@ -1,0 +1,214 @@
+#{extends 'main.html' /}
+#{set title:'RESOLVE Web IDE' /}
+
+#{set 'moreStyles'}
+    <link rel="stylesheet" href="@{'/public/stylesheets/componentNav.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/editorNav.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/editor.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/output.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/jquery-ui-1.8.20.custom.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/jquery.qtip.min.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+#{/set}
+
+#{set 'moreScripts'}
+    <script type="text/javascript" src="@{'/public/javascripts/lib/jquery-1.7.2.min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/lib/jquery-ui-1.8.20.custom.min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/lib/jquery.qtip.min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/lib/underscore-1.3.3.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/lib/backbone-0.9.2.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/lib/backbone-relational.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editor/ace.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editor/mode-resolve.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editor/mode-java.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/antlr/antlr3-all-min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/antlr/RParser-min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/antlr/RLexer-min.js'}"></script>
+    <!--<script type="text/javascript" src="js/menuHandlers.js"></script>-->
+    <script type="text/javascript" src="@{'/public/javascripts/menus.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/components.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editor.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/output.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/checker.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/compileAnalysis.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editorUpdate.js'}"></script>
+#{/set}
+
+#{set 'localScripts'}
+<script type="text/javascript">
+            var envItems = [{id:"env_info",name:"Info"},
+                    {id:"env_import",name:"Import"},
+                    {id:"env_export",name:"Export"},
+                    {id:"env_reset",name:"Reset"},
+                    {id:"env_login",name:"Login"}];
+            $(document).ready(function(){
+                $("body").css({margin:0});
+                $("#content").outerHeight($(window).outerHeight(true));
+                $("#content").css({margin:"auto"});
+                initializeComponentMenu();
+                initializeMenuBar();
+                initializeOutput();
+                initializeEditor();
+                initializeOpenComponentList();
+                //alert("${name}");
+            });
+            
+            function init(){
+                //initializeEditor();
+            }
+</script>
+
+<script type="text/template" id="menu_component_template">
+    <li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>
+</script>
+
+<script type="text/template" id="component_template">
+    <ul>
+        <li><h2>Component</h2>
+            <ul>
+                <% _(components).each(function(component){ %>
+                <%= component %>
+                <!--<li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>-->
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/template" id="project_template">
+    <ul>
+        <li><h2>Projects</h2>
+            <ul>
+                <% _(projects).each(function(project){ %>
+                <li><a id="<%= project.id %>" class="project"><%= project.pretty %></a></li>
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/template" id="list_item_template">
+
+    <ul>
+        <li><h2>Help</h2>
+            <ul>
+                <li><a id="help_overview">IDE Overview</a></li>
+                <li><a id="help_rvc">Verifying Compiler</a></li>
+                <li><a id="help_tutorials">Tutorials</a></li>
+                <li><a id="help_reportbug">Report Bug</a></li>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<!-- This template is used by Backbone.js to generate the Environment menu -->
+<script type="text/template" id="env_template">
+    <ul>
+        <li><h2>Environment</h2>
+            <ul>
+                <% _(options).each(function(option){ %>
+                <li><a id="<%= option.id %>"><%= option.name %></a></li>
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/template" id="open_component_template">
+    <ul>
+        <% _(components).each(function(component){ %>
+        <%= component %>
+        <!--<li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>-->
+        <% }); %>
+    </ul>
+</script>
+#{/set}
+
+#{set 'localStyles'}
+<style  type="text/css">
+    /*
+        * These styles set the sizes of the general containers
+        */
+
+    #content {
+        width:1200px;
+        border: 1px solid #AAA;
+    }
+    #upper_menus {
+        height: 50px;
+        /*margin-bottom: 25px;*/
+    }
+    #component_views {
+        /*height:510px;*/
+        /*margin-top: 10px;*/
+        /*border: solid 1px gray;*/
+    }
+    .section {
+        clear:left;
+    }
+    .pane_left {
+        float:left;
+        /*height:510px;
+        margin-right: 15px;*/
+    }
+    .pane_right {
+        float:right;
+    }
+    .hidden{
+        display: none;
+    }
+</style>
+#{/set}
+
+<div id="content">
+    <div id="upper_menus">
+        <div id="component_menu" class="menu pane_left">
+            <ul>
+                <li><h2>Components</h2>
+                    <ul id="component_list"></ul>
+                </li>
+            </ul>
+        </div>
+        <div id="projects_container" class="menu pane_left"></div>
+        <div id="help_container" class="menu pane_right"></div>
+        <div id="env_menu" class="menu pane_right"></div>
+    </div>
+    <!--<div id="open_menu_container" class="section">-->
+
+        <div  id="open_menu" class="section notSelectable">
+            <div id="scan_left">&lt;</div>
+            <ul></ul>
+            <div id="scan_right">&gt;</div>
+        </div>
+
+    <!--</div>-->
+    <div id="component_views" class="section">
+        <div id="editor_container" class="pane_left">
+            <div id="control_bar" class="notSelectable"></div>
+            <div id="code_editor">
+                test
+            </div>
+            <!--<div class="pane_left">-->
+            <div id="editor_handle" class="ui-resizable-handle ui-resizable-e">&#8596;</div>
+            <!--</div>-->
+        </div>
+        <div id="output_container" class="pane_left">
+            <div id="output_tabs">
+                <ul id="output_list">
+                    <li><a href="#tabs_info">Info</a></li>
+                    <li><a href="#tabs_output">Output</a></li>
+                    <li><a href="#tabs_vcs">VCs</a></li>
+                </ul>
+                <div id="tabs_info">no info</div>
+                <div id="tabs_output">
+                    <div id="console"></div>
+                </div>
+                <div id="tabs_vcs">
+                    <div id="vcs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="dialog_new" class="hidden">create new component dialog</div>
+<div id="dialog_load" class="hidden">load new component dialog</div>
+

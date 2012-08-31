@@ -2,9 +2,12 @@
 # Derived files #
 #################
 
-# Anything in the derived directories
-build/
-dist/
+# stuff Play says to ignore
+tmp/
+modules/
+lib/
+test-result/
+logs/
 
 # Derived Java classes
 *.class

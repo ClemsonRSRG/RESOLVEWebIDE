@@ -1,0 +1,101 @@
+/*
+ * These styles control the editor and command bar
+ */
+
+
+#editor_container {
+    width:875px;
+    /*height:510px;*/
+    height:100%;
+    /*padding-top: 10px;*/
+}
+
+#control_bar {
+    height:22px;
+    width:845px;
+    padding: 6px 0px 4px 0px;
+}
+
+#code_editor {
+    clear:left;
+    width:845px;
+    /*height:474px;*/
+    border-top: solid 1px #AAA;
+    border-right: solid 1px #AAA;
+    border-bottom: solid 1px #AAA;
+}
+
+#editor_handle {
+    width: 25px;
+    height: 25px;
+    margin-right: 6px;
+    top: 238px;
+    background-image: url("../images/l-r-arrow.png");
+}
+
+#control_bar .controls_commands{
+    float: left;
+}
+
+#control_bar .controls_zoom{
+    float: right;
+}
+
+#control_bar .command{
+    margin-left: 2px;
+    text-align: center;
+    padding: 0px 5px;
+    width: auto;
+    height: 20px;
+    float: left;
+    border: solid 1px gray;
+    -moz-border-radius: 4px 4px 4px 4px;
+    -webkit-border-radius: 4px 4px 4px 4px;
+    border-radius: 4px 4px 4px 4px;
+    font-size: 8pt;
+}
+
+#control_bat .active{
+    cursor: pointer;
+    text-shadow: 0 1px 1px rgba(0,0,0,.3);
+}
+
+#control_bar .active:hover{
+    color: #fff;
+    background: #AAA;
+    -moz-box-shadow:    none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+#control_bar .java{
+    float: left;
+}
+
+#control_bar .zoom{
+    margin-left: 2px;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    float: left;
+    cursor: pointer;
+    border: solid 1px gray;
+    -moz-border-radius: 4px 4px 4px 4px;
+    -webkit-border-radius: 4px 4px 4px 4px;
+    border-radius: 4px 4px 4px 4px;
+    
+}
+
+#control_bar .plus{
+    background-image: url("/public/images/plus.png")
+}
+
+#control_bar .minus{
+    background-image: url("/public/images/minus.png")
+}
+
+.shadow {
+    -moz-box-shadow:    1px 1px 1px 1px #ccc;
+    -webkit-box-shadow: 1px 1px 1px 1px #ccc;
+    box-shadow:         1px 1px 1px 1px #ccc;
+}
