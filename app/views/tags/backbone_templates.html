@@ -1,0 +1,50 @@
+<script type="text/template" id="menu_component_template">
+    <li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>
+</script>
+
+<script type="text/template" id="component_template">
+    <ul>
+        <li><h2>Component</h2>
+            <ul>
+                <% _(components).each(function(component){ %>
+                <%= component %>
+                <!--<li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>-->
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/template" id="project_template">
+    <ul>
+        <li><h2>Projects</h2>
+            <ul  id="project_list">
+                <% _(projects).each(function(project){ %>
+                <li><a id="<%= project.id %>" class="project"><%= project.pretty %></a></li>
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<!-- This template is used by Backbone.js to generate the Environment menu -->
+<script type="text/template" id="env_template">
+    <ul>
+        <li><h2>Environment</h2>
+            <ul  id="env_list">
+                <% _(options).each(function(option){ %>
+                <li><a id="<%= option.id %>"><%= option.name %></a></li>
+                <% }); %>
+            </ul>
+        </li>
+    </ul>
+</script>
+
+<script type="text/template" id="open_component_template">
+    <ul>
+        <% _(components).each(function(component){ %>
+        <%= component %>
+        <!--<li><a id="<%= component.index %>" class="project"><%= component.name %></a></li>-->
+        <% }); %>
+    </ul>
+</script>

@@ -5,13 +5,22 @@
         <title>#{get 'title' /}</title>
         <meta charset="${_response_encoding}">
         <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/main.css'}">
-        #{get 'moreStyles' /}
-        <script src="@{'/public/javascripts/lib/jquery-1.7.2.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
-        #{get 'moreScripts' /}
+        #{get 'includeStyles' /}
+        <script src="@{'/public/javascripts/libraries/jquery-1.7.2.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
+        <script src="@{'/public/javascripts/main.js'}" type="text/javascript" charset="${_response_encoding}"></script>
+        
+        #{get 'includeScripts' /}
         #{get 'localScripts' /}
         #{get 'localStyles' /}
     </head>
     <body>
-        #{doLayout /}
+        <div id="content">
+            #{user_bar currentUser:user/}
+            #{doLayout /}
+            #{footer /}
+        </div>
+        <div id="dialog_user_controls" class="hidden"></div>
+        <div id="background" class="background"></div>
     </body>
+    #{backbone_templates /}
 </html>

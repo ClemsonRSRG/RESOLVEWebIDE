@@ -340,7 +340,7 @@ function getErrorArray(jsonResults){
             errors = jsonResults[0].errors;
         }
     }
-    return errors
+    return errors;
 }
 
 function getBugArray(jsonResults){

@@ -1,0 +1,113 @@
+#{extends 'main.html' /}
+#{set title:'Project Admin' /}
+
+#{set 'includeStyles'}
+<style type="text/css" media="screen" charset="${_response_encoding}">
+.project_row { clear:left; text-align: center; }
+.project_item { width: 200px; float:left; }
+#content { width:auto; }
+</style>
+#{/set}
+
+#{user_bar currentUser:user/}
+<div style="margin:20px">
+    <div class="project_row">
+        <div class="project_item">
+        Project Name
+        </div>
+        <div class="project_item">
+        Project Owner
+        </div>
+        <div class="project_item">
+        JSON Last Generated
+        </div>
+        <div class="project_item">
+        Open Access
+        </div>
+        <div class="project_item">
+        Hide Standard
+        </div>
+        <div class="project_item">
+        Default Project
+        </div>
+        <div class="project_item">
+        &nbsp;
+        </div>
+    </div>
+    #{list items:projects, as:'project' }
+    <div class="project_row">
+        #{form @Projects.updateProject()}
+            <input type="hidden" name="id" value="${project.id}">
+            <div class="project_item">
+                ${project.name}
+            </div>
+            <div class="project_item">
+                #{if project.ownerEmail != null}
+                    ${project.ownerEmail}
+                #{/if}
+                #{else}
+                    none
+                #{/else}
+            </div>
+            <div class="project_item">
+                ${project.jsonRepDate}
+            </div>
+            <div class="project_item">
+                <input type="checkbox" name="openProject" *{value="${project.openProject}" }*
+                    #{if project.openProject}
+                        checked=checked
+                    #{/if}
+                    >
+            </div>
+            <div class="project_item">
+                <input type="checkbox" name="standardHidden" *{value="${project.standardHidden}"}*
+                    #{if project.standardHidden}
+                        checked=checked
+                    #{/if}
+                    >
+            </div>
+            <div class="project_item">
+                <input type="checkbox" name="defaultProject" *{value="${project.defaultProject}"}*
+                    #{if project.defaultProject}
+                        checked=checked
+                    #{/if}
+                    >
+            </div>
+            <div class="project_item">
+                <input type="submit" value="update">
+            </div>
+        #{/form}
+    </div>
+    #{/list}
+    <div class="project_row">
+        Add new Project
+    </div>
+    <div class="project_row">
+    #{form @Projects.addProject()}
+        <div class="project_item">
+            <input type="text" name="name">
+        </div>
+        <div class="project_item">
+            &nbsp;
+        </div>
+        <div class="project_item">
+            &nbsp;
+        </div>
+        <div class="project_item">
+            <input type="checkbox" name="openProject">
+        </div>
+        <div class="project_item">
+            <input type="checkbox" name="standardHidden">
+        </div>
+        <div class="project_item">
+            <input type="checkbox" name="defaultProject">
+        </div>
+        <div class="project_item">
+            <input type="submit" value="add project">
+        </div>
+    #{/form}
+    </div>
+</div>
+
+
+

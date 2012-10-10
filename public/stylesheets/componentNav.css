@@ -16,9 +16,9 @@
     float: left;
     
 }
-.menu ul:hover {
+/*.menu ul:hover {
     display: block;
-}
+}*/
 
 .menu a, .menu h2 {
     font: bold 12px/16px arial, helvetica, sans-serif;
@@ -29,31 +29,33 @@
     margin: 0;
     padding: 3px 3px;
     width: 180px;
+    text-decoration: none;
+    color: black;
 }
 
-.menu h2, .menu .sub_menu {
+.menu h2, .menu, .sub_menu, .component_title{
     color: #fff;
     background-color: #02008d;
     width: max-content;
 
 }
 
-.menu li {
+.menu li:not(.component_title) {
     color: #000;
     background: #c8c8ff;
     text-decoration: none;
     position: relative;
     width: max-content;
-    display: inline-block;
+    /*display: inline-block;*/
 }
 
-.menu li:hover {
+.menu li:hover:not(.component_title) {
     color: #01004c;
     background: #fff1e1;
     cursor: pointer;
     border-color: #01004c;
    /* position: absolute; */
-    display: inline-block;
+    /*display: inline-block;*/
 }
 
 .menu ul ul {
@@ -68,29 +70,15 @@
     left: 100%;
 }
 
-div.menu ul ul {
+.hidden{
     display: none;
 }
 
-div.menu ul ul ul {
-    display: none;
-}
-
-div.menu ul ul,
-div.menu ul li:hover ul ul,
-div.menu ul ul li:hover ul ul,
-div.menu ul ul ul li:hover ul ul,
-div.menu ul ul ul ul li:hover ul ul {
-    display: none;
-}
-
-div.menu ul li:hover ul,
-div.menu ul ul li:hover ul,
-div.menu ul ul ul li:hover ul,
-div.menu ul ul ul ul li:hover ul,
-div.menu ul ul ul ul ul li:hover ul {
+.visable{
     display: block;
 }
 
-/* http://ago.tanfa.co.uk/css/examples/menu/tutorial-h.html */
+.component_title {
+    cursor: default;
+}
 

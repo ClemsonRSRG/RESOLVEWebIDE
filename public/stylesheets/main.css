@@ -1,0 +1,48 @@
+/*
+* These styles set the sizes of the general containers
+*/
+
+#content {
+    width:1000px;
+    border: 1px solid #AAA;
+}
+#menu_bar {
+    height: 50px;
+    /*margin-bottom: 25px;*/
+}
+#component_views {
+    /*height:510px;*/
+    /*margin-top: 10px;*/
+    /*border: solid 1px gray;*/
+}
+#footer {
+    text-align: center;
+    height: 50px;
+}
+.section {
+    clear:left;
+}
+.pane_left {
+    float:left;
+}
+.pane_right {
+    float:right;
+}
+.hidden {
+    display: none;
+}
+
+.background {
+    display: none;
+    position: absolute;
+    height: 100%;
+    width:100%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: #000000;
+    z-index: 5;
+    opacity: 0.65;
+    -moz-opacity: 0.65;
+    filter:alpha(opacity=65);
+}

@@ -36,6 +36,9 @@ var ProjectListView = Backbone.View.extend({
         // the Project menu based on the collection
         var template = _.template($("#project_template").html(), { projects: this.collection.toJSON() });
         $(this.el).html( template );
+        setMenuHandlers($("#projects_container li"));
+        $("#project_list").addClass("hidden");
+        $("#project_list").find("li").addClass("hidden");
     },
     events: {
         "click a.project": "selectProject"
@@ -65,6 +68,9 @@ var EnvMenuBarView = Backbone.View.extend({
         // the Envrionment menu based on the envItems array
         var template = _.template($("#env_template").html(), {options: envItems});
         this.$el.html( template );
+        setMenuHandlers($("#env_menu li"));
+        $("#env_list").addClass("hidden");
+        $("#env_list").find("li").addClass("hidden");
     },
     events: {
         "click a#env_info": "showOverview",
@@ -100,8 +106,11 @@ var HelpMenuBarView = Backbone.View.extend({
                             "help_tutorials":"Tutorials",
                             "help_reportbug":"Report Bug"}};
         var template = _.template(itemGen, helpItems);
-        var menu = "<ul><li><h2>Help</h2><ul>" + template + "</ul></ul>";
+        var menu = "<ul><li><h2>Help</h2><ul id=\"help_list\">" + template + "</ul></ul>";
         this.$el.html( menu );
+        setMenuHandlers($("#help_container li"));
+        $("#help_list").addClass("hidden");
+        $("#help_list").find("li").addClass("hidden");
     },
     events: {
         "click a#help_overview": "showOverview",

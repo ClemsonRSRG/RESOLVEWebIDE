@@ -40,6 +40,13 @@ function syntaxCheck(openComponent) {
         var errorMsg = el.attr("title");
         //var that = $(this);
         if(errorMsg != ""){
+            var errorLine = el.html();
+            var errorCol = null;
+            jQuery.each(errorArray, function(index, item){
+                if(item.row + 1 == errorLine){
+                    errorCol = item.column;
+                }
+            });
             addQtip(el, errorMsg);
             /*el.attr({title: ""});
             $(this).qtip({

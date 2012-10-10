@@ -4,7 +4,8 @@
 
 
 #editor_container {
-    width:875px;
+    position: relative;
+    width:1000px;
     /*height:510px;*/
     height:100%;
     /*padding-top: 10px;*/
@@ -12,26 +13,27 @@
 
 #control_bar {
     height:22px;
-    width:845px;
+    width:1000px;
     padding: 6px 0px 4px 0px;
 }
 
 #code_editor {
     clear:left;
-    width:845px;
+    width:1000px;
     /*height:474px;*/
     border-top: solid 1px #AAA;
     border-right: solid 1px #AAA;
     border-bottom: solid 1px #AAA;
+    z-index: 25;
 }
 
-#editor_handle {
+/*#editor_handle {
     width: 25px;
     height: 25px;
     margin-right: 6px;
     top: 238px;
     background-image: url("../images/l-r-arrow.png");
-}
+}*/
 
 #control_bar .controls_commands{
     float: left;
@@ -87,11 +89,11 @@
 }
 
 #control_bar .plus{
-    background-image: url("/public/images/plus.png")
+    background-image: url("../images/plus.png")
 }
 
 #control_bar .minus{
-    background-image: url("/public/images/minus.png")
+    background-image: url("../images/minus.png")
 }
 
 .shadow {
@@ -99,3 +101,79 @@
     -webkit-box-shadow: 1px 1px 1px 1px #ccc;
     box-shadow:         1px 1px 1px 1px #ccc;
 }
+
+#console-container {
+    position: absolute;
+    right: 20px;
+    /*height: 600px;*/
+    width: 400px;
+    overflow: hidden;
+    border-right: solid 1px gray;
+}
+
+#console-expander {
+    width: 5px;
+    /*height: 100%;*/
+    z-index: 50;
+}
+
+#console-info {
+    height: 100%;
+    background-color: #E8E8E8;
+    overflow-y: scroll;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 380px;
+}
+
+#editor-console {
+    position: absolute;
+    top: 0px;
+    /*height: 100%;*/
+    width: 400px;
+    border: solid 1px gray;
+    border-left: none;
+    background: white;
+    z-index: 50;
+}
+
+.console-visible {
+    /*right: 0px;*/
+}
+
+.console-hidden {
+    right: -385px;
+}
+
+/* VCs tooltip style (for Qtip plugin)*/
+.ui-tooltip-VC{
+    position: absolute;
+    background-color:#ADD8E6;
+    border-color:#000066;
+    color:#000066;
+    cursor: default;
+    font-family:'Lucida Grande',sans-serif;
+    font-size: 12px;
+    margin: 0em;
+    max-width: 600px;
+    }
+.ui-tooltip-VC .ui-tooltip-titlebar{
+    background-color:#F5A07A;
+    font-size:12px;
+    font-family:'Lucida Grande',sans-serif;
+    font-weight: normal;
+    cursor: default;
+    text-transform: capitalize;
+    }
+.ui-tooltip-VC .ui-state-default .ui-tooltip-icon{
+    background-position:-2px 0;
+    }
+.ui-tooltip-VC .ui-tooltip-icon{
+    border-color:#8B5742;
+    }
+.ui-tooltip-VC .ui-tooltip-titlebar .ui-state-hover{
+    border-color:#8B5742;
+    cursor: default;
+    }
+    

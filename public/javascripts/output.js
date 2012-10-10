@@ -14,9 +14,9 @@ function initializeOutput(){
 
 
 function log(msg){
-    var consoleDiv = $("#console");
-    consoleDiv.append(msg+"<br/>");
-    consoleDiv[0].scrollTop = consoleDiv[0].scrollHeight;
+    //var consoleDiv = $("#console");
+    //consoleDiv.append(msg+"<br/>");
+    //consoleDiv[0].scrollTop = consoleDiv[0].scrollHeight;
     //var consoleDiv = document.getElementById("console");
     //consoleDiv.innerHTML += msg+"<br/>";
     //consoleDiv.scrollTop = consoleDiv.scrollHeight;

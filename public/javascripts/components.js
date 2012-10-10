@@ -6,7 +6,7 @@ var myComponentList = null;
 // myOpenComponentList is where we stor the Collection of components currently
 // open in the editor
 var myOpenComponentList = null;
-
+var selectedProject;
 /*
  * The Component is the model where we will store all the data necessary to process
  * the RESOLVE components (regardless of the ModuleKind)
@@ -27,38 +27,34 @@ var Component = Backbone.RelationalModel.extend({
         editorSession: null // we store the editor session here if the file is opened*/
     },
     initialize: function(){
-      //this.bind("relational:change:parent",this.change);
-      //this.bind("update:key",this.change);
-      //this.bind("change",this.change);
-      //this.bind("parent",this.change);
+      
+        this.ws = selectedProject;
     },
     relations: [{
         type: Backbone.HasMany,
         key: "realizations",
         relatedModel: "Component",
-        collectionType: 'ComponentList'/*,
-        reverseRelation: {
-            key: 'parent',
-            includeInJSON: false
-        }*/
+        collectionType: 'ComponentList'
     },
     {
         type: Backbone.HasMany,
         key: "enhancements",
         relatedModel: "Component",
-        collectionType: 'ComponentList'/*,
-        reverseRelation: {
-            key: 'parent',
-            includeInJSON: false
-        }*/
-    }]/*,
+        collectionType: 'ComponentList'
+    }],
     toJSON: function(){
-        var tempSession = this.get("editorSession");
-        this.unset("editorSession");
-        var json = Backbone.Model.prototype.toJSON.call(this);
-        this.set("editorSession", tempSession);
+        var json = "{name:\"" + this.get("name") + "\"," +
+            "pkg:\"" + this.get("pkg") + "\"," +
+            "project:\"" + selectedProject + "\"," +
+            "content:\"" + this.get("content") + "\"," +
+            "type:\"" + this.get("type") + "\"}";
+            //JSON.stringify(this.get("component")) +
+            //Backbone.Model.prototype.toJSON.call(this.get("component")) +
+            //", ws: \"" +
+            //this.get("ws") +
+            //"\"}";
         return json;
-    }*/
+    }
 });
 
 var OpenComponent = Backbone.RelationalModel.extend({
@@ -67,7 +63,6 @@ var OpenComponent = Backbone.RelationalModel.extend({
         id: null,
         name: null,
         pkg: null, // the concept folder, must be the same name as the associated concept
-        ws: null,
         java: null,
         vcs: null
     },
@@ -75,7 +70,8 @@ var OpenComponent = Backbone.RelationalModel.extend({
         var model = this.get("componentModel");
         this.set("name", model.get("name"));
         this.set("id", model.get("pkg")+"."+model.get("name"));
-        localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
+        updateOpenComponents(model);
+        //localStorage.set(localOpenComponentList, JSON.stringify(myOpenComponentList.toJSON()));
     },
     toJSON: function(){
         var tempModel = this.get("componentModel");
@@ -142,6 +138,8 @@ var ComponentMenuView = Backbone.View.extend({
     },
     // we render each ComponentView separately and add it to the appropriate list
     render: function(){
+        var componentmenu = $("#component_menu li:first");
+        setMenuHandlers(componentmenu);
         var that = this;
         this._componentViews = [];
         this.collection.each(function(component){
@@ -153,13 +151,17 @@ var ComponentMenuView = Backbone.View.extend({
                 that._componentViews.push(new ComponentView({model:component}));
             }
         });
-        $(this.el).empty();
-        var concepts = $("<li>").html("<a class=\"component\">Concepts</a>");
-        var facilities = $("<li>").html("<a class=\"component\">Facilities</a>");
-        var theories = $("<li>").html("<a class=\"component\">Theories</a>");
-        var conceptList = $("<ul>").appendTo(concepts);
-        var facilityList = $("<ul>").appendTo(facilities);
-        var theoryList = $("<ul>").appendTo(theories);
+        var concepts = $("#concepts");
+        var conceptList = concepts.children("ul");
+        setMenuHandlers(concepts);
+        var facilities = $("#facilities");
+        var facilityList = facilities.children("ul");
+        setMenuHandlers(facilities);
+        var theories = $("#theories");
+        if(theories != null){
+            var theoryList = theories.children("ul");//.empty();
+            setMenuHandlers(theories);
+        }
         _(this._componentViews).each(function(cv){
             if(cv.model.get("type") == "c"){
                 conceptList.append(cv.render().el);
@@ -168,16 +170,13 @@ var ComponentMenuView = Backbone.View.extend({
                 facilityList.append(cv.render().el);
             }
             else if(cv.model.get("type") == "t"){
-                theoryList.append(cv.render().el);
+                if(theories != null){
+                    theoryList.append(cv.render().el);
+                }
             }
         });
-        $(this.el).append(facilities);
-        $(this.el).append(concepts);
-        $(this.el).append(theories);
-        var creater = $("<li>").html("<a class=\"creater\">Create</a>");
-        var loader = $("<li>").html("<a class=\"loader\">Load</a>");
-        $(this.el).append(creater);
-        $(this.el).append(loader);
+        $("#component_list").addClass("hidden");
+        $("#component_list").find("li").addClass("hidden");
     },
     events: {
         "click .creater" : "createComponent",
@@ -227,7 +226,7 @@ var ComponentView = Backbone.View.extend({
             var list = $("<ul>");
             var item = null;
             var ul = null;
-            if(this._enhancementViews.length > 0){
+            /*if(this._enhancementViews.length > 0){
                 item = $("<li>").html("<a>enhancements</a>").addClass("sub_menu");
                 ul = $("<ul>");
                 _(this._enhancementViews).each(function(cv){
@@ -235,14 +234,25 @@ var ComponentView = Backbone.View.extend({
                 });
                 ul.appendTo(item);
                 item.appendTo(list);
-            }
+                setMenuHandlers(item);
+            }*/
             if(this._realizationViews.length > 0){
+                item = $("<li>").html("<h2>realizations</h2>").addClass("component_title");
+                item.appendTo(list);
                 _(this._realizationViews).each(function(cv){
                     list.append(cv.render().el);
                 });    
             }
+            if(this._enhancementViews.length > 0){
+                item = $("<li>").html("<h2>enhancements</h2>").addClass("component_title");
+                item.appendTo(list);
+                _(this._enhancementViews).each(function(cv){
+                    list.append(cv.render().el);
+                });
+            }
         }
         $(this.el).html(html).append(list);
+        setMenuHandlers($(this.el));
         return this;
     },
     events: {
@@ -253,6 +263,7 @@ var ComponentView = Backbone.View.extend({
         var model = this.model
         log(model.get("name")+"<br/>test");
         displayComponent(model);
+        $(event.currentTarget).trigger("mouseout");
         $("#component_list").css({display:"none"});
     }
 });
@@ -287,75 +298,66 @@ var OpenComponentListView = Backbone.View.extend({
         var that = this;
         $(this.el).empty();
         this._openComponentCount = 0;
-        var list = $("<ul>");
+        var list = $("<ul>").attr({id:"open_component_list"});
         var listWidth = list.width();
-        var scanLeft = $("<button>").html("&#x25C0;").addClass("scanButton");
-        var scanRight = $("<button>").html("&#x25B6;").addClass("scanButton");
-        var scanLeftDiv = $("<div>").append(scanLeft).attr({"id":"scan_left"});
-        var scanRightDiv = $("<div>").append(scanRight).attr({"id":"scan_right"});
-        $(this.el).html(scanLeftDiv);
-        var openMenuWidth = $("#open_menu").width() - (2 * scanLeftDiv.width());
-        $(this.el).append(list);
-        var done = false;
-        _(this._openComponents).each(function(component, index){
-            that._openComponentCount++;
-            var ocv = new OpenComponentView({model:component});
-            var el = ocv.render().el;
-            if(index < that._openComponentStartIndex){
-                $(el).addClass("hidden");
-                that._openComponentCount--;
-            }
-            list.append(el);
-            var itemWidth = $(el).width();
-            if(!done && (listWidth + itemWidth) > openMenuWidth){
-                if(shift_type == "shift_left"){
-                    $(el).addClass("hidden");
-                    that._openComponentCount--;
-                    log("editorNav -> shift_left -> hiding ->"+component.get("name"));
-                }
-                else if(shift_type == "shift_right"){
-                    that._openComponentStartIndex++;
-                    var firstVisible = $(el).parent().children(':not(.hidden)')[0];
-                    $(firstVisible).addClass("hidden");
-                    that._openComponentCount--;
-                    done = true;
-                    log("editorNav -> shift_right -> hiding ->"+component.get("name"));
-                }
-                else{
-                    $(el).addClass("hidden");
-                    that._openComponentCount--;
-                    log("editorNav -> hiding ->"+component.get("name"));
-                }
-            }
-            else if(done){
-                $(el).addClass("hidden");
-                that._openComponentCount--;
-            }
-            listWidth = list.width();
+        var scanLeft = $("<button>").attr({id:"scan_left"}).html("&#x25C0;").addClass("scanButton");
+        var scanRight = $("<button>").attr({id:"scan_right"}).html("&#x25B6;").addClass("scanButton");
+        var dropDown = $("<button>").attr({id:"ocv_dropdown"}).html("|").addClass("scanButton active shadow");
+        dropDown.click(function(event){
+            event.preventDefault();
+            var open_components = $("#open_menu");
+            showOpenComponents(open_components, $(this));
         });
-        $(this.el).append(scanRightDiv);
-        this._openComponentEndIndex = this._openComponentStartIndex + this._openComponentCount;
-        if(this._openComponentStartIndex > 0){
+        $(this.el).html(scanLeft);
+        var openMenuDiv = $("<div>").attr({id:"open_components"}).html(list);
+        $(this.el).append(openMenuDiv);
+        var done = false;
+        var dropDownComponentViews =  new Array();
+        _(this._openComponents).each(function(component, index){
+            var ocv = new OpenComponentView({model:component});
+            var ocv2 = new OpenComponentView({model:component});
+            var el = ocv.render().el;
+            list.append(el);
+            dropDownComponentViews.push(ocv2);
+        });
+        dropDownComponentViews.sort(sortOpenByName);
+        var dropDownList = $("<ul>").attr({id:"open_component_dropdown"});
+        dropDownList.addClass("hidden");
+        _(dropDownComponentViews).each(function(view, index){
+            var item = view.render().el;
+            dropDownList.append(item);
+           //console.log(view.model.get("name")) ;
+        });
+        $(this.el).append(scanRight);
+        $(this.el).append(dropDown);
+        $(this.el).append(dropDownList);
+        if(true){
             scanLeft.addClass("active shadow");
         }
-        var count = this._openComponentStartIndex + this._openComponentCount;
-        if(count < this.collection.length){
+        if(true){
             scanRight.addClass("active shadow");
         }
     },
     added: function(component){
-        if(this._openComponentEndIndex < this._openComponents.length){
-            this._openComponentStartIndex = this._openComponents.length - this._openComponentCount;
-            this._openComponentEndIndex = this._openComponents.length;
-        }
         this._openComponents.push(component);
-        this.render("shift_right");
+        this.render();
         var search = "a[data-id=\"" + component.get("pkg") + "." + component.get("name") + "\"]";
         var link = $("#open_menu").find(search);
         var item = $(link).parent();
-        $("#open_menu>ul>li.selected").removeClass("selected");
+        $("#open_component_list>li.selected").removeClass("selected");
         item.addClass("selected");
-        localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
+        var openMenuDiv = $("#open_components")
+        var list = $("#open_component_list");
+        var menuLeft = openMenuDiv.position().left;
+        var menuRightSide = menuLeft + openMenuDiv.width();
+        var itemPos = item.position();
+        var itemRightSide = menuLeft + itemPos.left + item.width();
+        var listLeft = list.position().left;
+        if(itemRightSide > menuRightSide){
+            list.css("left", listLeft - (itemRightSide - menuRightSide + 10));
+        }
+        updateOpenComponents(component);
+        //localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
     },
     removed: function(component){
         var that = this;
@@ -375,7 +377,7 @@ var OpenComponentListView = Backbone.View.extend({
             }
             else{
                 this._selectedComponent = myOpenComponentList.at(newSelected).get("id");
-                model = myComponentList.at(newSelected);
+                model = myOpenComponentList.at(newSelected);
             }
             displayComponent(model);
         }
@@ -384,36 +386,83 @@ var OpenComponentListView = Backbone.View.extend({
             var EditSession = require("ace/edit_session").EditSession;
             var ResolveMode = require("ace/mode/resolve").Mode;
             editor.setSession(new EditSession("", new ResolveMode));
-        } 
-        localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
+            myUserControlView.model = new OpenComponent();
+            myUserControlView.render();
+        }
+        updateOpenComponents(component);
+        //localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
     },
     scanLeft: function(event){
-        if(this._openComponentStartIndex > 0){
-            var currSelected = $("#open_menu>ul>li.selected");
-            var index = $(currSelected[0]).children(':first-child').attr("data-index");
-            var cid = myOpenComponentList.at(index).get("cid");
-            var model = getModelByCid(myComponentList, cid);
-            this._openComponentStartIndex--;
-            this.render("shift_left");
-            displayComponent(model);
-        }  
+        openComponentScan("left", this);
+        //this._scanTImer = setTimeout(openComponentScan("left"), 500);
+        /*var openMenuDiv = $("#open_components")
+        var list = $("#open_component_list");
+        var menuLeft = openMenuDiv.position().left;
+        var menuRightSide = menuLeft + openMenuDiv.width();
+        var listLeft = list.position().left;
+        var listRightSide = listLeft + list.width();
+        if(menuLeft > listLeft + menuLeft){
+            list.css("left", listLeft + 5);
+        }*/
     },
     scanRight: function(){
-        var count = this._openComponentStartIndex + this._openComponentCount;
-        if(count < this.collection.length){
-            var currSelected = $("#open_menu>ul>li.selected");
-            var index = $(currSelected[0]).children(':first-child').attr("data-index");
-            var cid = myOpenComponentList.at(index).get("cid");
-            var model = getModelByCid(myComponentList, cid);
-            this.render("shift_right");
-            displayComponent(model);
-        } 
+        openComponentScan("right", this);
+        //this._scanTImer = setTimeout(openComponentScan("left"), 500);
+        /*var openMenuDiv = $("#open_components")
+        var list = $("#open_component_list");
+        var menuLeft = openMenuDiv.position().left;
+        var menuRightSide = menuLeft + openMenuDiv.width();
+        var listLeft = list.position().left;
+        var listRightSide = menuLeft + listLeft + list.width();
+        if(menuRightSide < listRightSide){
+            list.css("left", listLeft - 5);
+        }*/
+    },
+    stopScan: function(){
+        clearTimeout(this._scanTimer);
     },
     events: {
-        "click #scan_left" : "scanLeft",
-        "click #scan_right" : "scanRight"
+        "mousedown #scan_left.active" : "scanLeft",
+        "mousedown #scan_right.active" : "scanRight",
+        "mouseup #scan_left.active" : "stopScan",
+        "mouseup #scan_right.active" : "stopScan"
     }
 });
+
+function openComponentScan(direction, view){
+    var openMenuDiv = $("#open_components");
+    var list = $("#open_component_list");
+    var menuLeft = openMenuDiv.position().left;
+    var menuRightSide = menuLeft + openMenuDiv.width();
+    var listLeft = list.position().left;
+    var listRightSide = menuLeft + listLeft + list.width();
+        
+    if(direction == "left"){
+        if(menuLeft > listLeft + menuLeft + 10){
+            list.animate({"left": listLeft + 15}, "fast");
+            //myOpenComponent_view.scanLeft();
+        }
+    }
+    else if(direction == "right"){
+        if(menuRightSide + 10 < listRightSide){
+            list.animate({"left": listLeft - 15}, "fast");
+            //myOpenComponent_view.scanRight();
+        }
+    }
+    //view._scanTImer = setTimeout(openComponentScan(direction, view), 5);
+}
+
+function sortOpenByName(a, b){
+    var lhs = a.model.get("name").toLowerCase();
+    var rhs = b.model.get("name").toLowerCase();
+    if(lhs.charAt(0) > rhs.charAt(0)){
+        return 1;
+    }
+    if(lhs.charAt(0) < rhs.charAt(0)){
+        return -1;
+    }
+    return (lhs > rhs);
+}
 
 var OpenComponentView = Backbone.View.extend({
     tagName: "li",
@@ -427,14 +476,24 @@ var OpenComponentView = Backbone.View.extend({
         var component = this.model;
         var index = myOpenComponentList.indexOf(component);
         var id = component.get("componentModel").get("pkg") + "." + component.get("componentModel").get("name");
-        var html = "<a data-index= \"" + index + "\" data-cid=\"" + component.cid + "\" data-id=\"" + id + "\" class=\"component\">";
-        html += component.get("componentModel").get("name") + "</a>";
-        $(this.el).html(html).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
+        var name = component.get("componentModel").get("name");
+        var link = $("<a>").attr({
+            "data-index": index,
+            "data-cid": component.cid,
+            "data-id": id,
+            "title": component.get("name")
+        }).html(name).addClass("component");
+        //var html = "<a data-index= \"" + index + "\" data-cid=\"" + component.cid + "\" data-id=\"" + id + "\" class=\"component\" ";
+        //html += "title=\"" + component.get("name") + "\">";
+        //html += component.get("componentModel").get("name") + "</a>";
+        //$(this.el).html(html).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
+        $(this.el).append(link).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
         return this;
     },
     events: {
-        "click #open_menu a.component" : "selectComponent",
-        "click #open_menu img.close_img" : "closeComponent"
+        "click #open_component_list a.component" : "selectComponent",
+        "click #open_component_dropdown a.component" : "selectDropdownComponent",
+        "click #open_menu button.close_img" : "closeComponent"
     },
     selectComponent: function(event){
         event.stopPropagation();
@@ -442,23 +501,38 @@ var OpenComponentView = Backbone.View.extend({
         //var model = getModelByCid(myComponentList, cid);
         displayComponent(this.model.get("componentModel"));
         var item = $(event.currentTarget).parent();
-        $("#open_menu>ul>li.selected").removeClass("selected");
+        $("#open_component_list>li.selected").removeClass("selected");
         item.addClass("selected");
+    },
+    selectDropdownComponent: function(event){
+        event.stopPropagation();
+        var cid = this.model.cid;
+        //var model = getModelByCid(myComponentList, cid);
+        displayComponent(this.model.get("componentModel"));
+        //var item = $("#open_component_list[data-cid=\""+cid+"\"]")
+        //$("#open_component_list>li.selected").removeClass("selected");
+        //$(item[0]).addClass("selected");
     },
     closeComponent: function(event){
         event.stopPropagation();
         var openModel = this.model;
         //var model = getModelByCid(myComponentList, openModel.get("cid"));
+        var prevIndex = _.indexOf(myOpenComponentList.models, openModel) - 1;
+        //if(prevIndex >= 0){
+            //var prevComponent = myOpenComponentList.at(prevIndex);;
+            //myOpenComponent_view._selectedComponent = prevComponent.get("pkg") + "." + prevComponent.get("name");
+        //}
         openModel.unset("editorSession");
         myOpenComponentList.remove(openModel);
     }
 });
 
+
 /*
  * This function creates the code for the X div to close something
  */
 function getCloseDiv(){
-    var closeImg = $("<img src=\"public/images/close.png\">").addClass("close_img");
+    var closeImg = $("<button>").addClass("close_img");
     return closeImg;
 }
 
@@ -505,9 +579,9 @@ function displayComponent(component){
     }
     var dataIndex = component.get("index");
     var search = "a[data-id=\"" + componentId + "\"]";
-    var link = $("#open_menu").find(search);
+    var link = $("#open_component_list").find(search);
     var item = $(link).parent();
-    $("#open_menu>ul>li.selected").removeClass("selected");
+    $("#open_component_list>li.selected").removeClass("selected");
     item.addClass("selected");
     if(component.get("type") == 't'){
         // readonly for theory files
@@ -520,13 +594,20 @@ function displayComponent(component){
     myOpenComponent_view._selectedComponent = componentPkg + "." + componentName;
     myUserControlView.model = openComponent;
     myUserControlView.render();
-    localStorage.selectedComponentId = componentPkg + "." + componentName;
+    updateSelectedComponent(component);
+    updateOpenComponents(component);
+    //localStorage.set(component.get("project") + "_selected_id", componentPkg + "." + componentName);
     displayComponentInfo(component);
     syntaxCheck(openComponent);
     session.on("change", function() {
       syntaxCheck(openComponent);
    });
-   clearVcInfo();
+   $("#component_list").removeClass("visible").addClass("hidden");
+   hideOpenComponents($("#open_menu"), $("#ocv_dropdown"));
+   //$("#open_component_dropdown").removeClass("visible").addClass("hidden");
+   scanToSelected(item);
+   clearConsole();
+   //clearVcInfo();
 }
 
 function displayComponentInfo(component){
@@ -547,9 +628,20 @@ function clearVcInfo(){
     $("#vcs").html("");
 }
 
-function initializeComponentMenu(){
+function initializeComponentMenu(json, selectedProjectName){
+    selectedProject = selectedProjectName;
+    myComponentList = new ComponentList(json["components"]);
+    myComponent_view = new ComponentMenuView({el: $("#component_list"), collection: myComponentList});
+    //$("#component_list").parent().trigger('mouseenter');
+    $("#component_list").bind("hover", function(){
+        $("#component_list").css({display:""});
+    });
+    /*var pathname = window.location.pathname;
+    if(pathname.length > 1){
+        pathname += "/";
+    }
     $.ajax({
-        url: "public/data.json",
+        url: pathname+"public/data.json",
         dataType: "json",
         async: false,
         success: function(json){
@@ -565,18 +657,19 @@ function initializeComponentMenu(){
             alert(err.status + " - " + err.statusText);
             log(err.status + " - " + err.statusText);
         }
-    }); 
+    }); */
 }
 
-function initializeOpenComponentList(){
+function initializeOpenComponentList(selectedProjectName){
+    selectedProject = selectedProjectName;
     myOpenComponentList = new OpenComponentList();
-    if(localStorage.localOpenComponentList){
-        myOpenComponentList.reset(JSON.parse(localStorage.localOpenComponentList));
-    
+    var localOpenComponentList = localStorage.getItem(selectedProjectName + "_open_components");
+    if(localOpenComponentList != null){
+        myOpenComponentList.reset(JSON.parse(localOpenComponentList));
     }
     myOpenComponent_view = new OpenComponentListView({el: $("#open_menu"), collection: myOpenComponentList});
     if(myOpenComponentList.length != 0){
-        var selectedComponentId = localStorage.selectedComponentId;
+        var selectedComponentId = localStorage.getItem(selectedProjectName + "_selected_id");
         var openComponentIndex = 0;
         var openComponent = null;
         if(selectedComponentId != null){
@@ -592,7 +685,63 @@ function initializeOpenComponentList(){
             openComponent = myOpenComponentList.at(0);
         }
         displayComponent(openComponent);
+        var item = $("#open_component_list>li.selected");
+        //scanToSelected(item);
     }
+}
+
+function scanToSelected(item){
+    var openMenuDiv = $("#open_components")
+    var list = $("#open_component_list");
+    var menuLeft = openMenuDiv.position().left;
+    var menuRightSide = openMenuDiv.width();
+    var itemPos = item.position();
+    var listLeft = list.position().left;
+    var itemRightSide = itemPos.left + item.outerWidth(true);
+    if(itemRightSide > menuRightSide){
+        list.css("left", listLeft - (itemRightSide - menuRightSide));
+    }
+    else if(itemPos.left + listLeft < menuLeft){
+        list.css("left", 0);
+    }
+}
+
+function updateOpenComponents(component){
+    localStorage.setItem(selectedProject + "_open_components", JSON.stringify(myOpenComponentList.toJSON()));
+    //localStorage.setItem(component.get("componentModel").ws + "_open_components", JSON.stringify(myOpenComponentList.toJSON()));
+}
+
+function updateSelectedComponent(component){
+    localStorage.setItem(selectedProject + "_selected_id", component.get("pkg") + "." + component.get("name"));
+    //localStorage.setItem(component.ws + "_selected_id", component.get("pkg") + "." + component.get("name"));
+}
+
+function openComponent(targetComponent){
+    var component;
+    if(targetComponent.type == "f"){
+        component = myComponentList.where({name:targetComponent.name})[0];
+    }
+    else if(targetComponent.type == "er"){
+        var concept = myComponentList.where({name:targetComponent.concept})[0];
+        component = concept.get("realizations").where({name:targetComponent.name})[0];
+        if(component == null){
+            var enhancements = concept.get('enhancements');
+            component = enhancements.where({name:targetComponent.name})[0];
+            if(component == null){
+                var foundComponent = null;
+                $.each(enhancements.models, function(index, enhancement){
+                    foundComponent = enhancement.get("realizations").where({name:targetComponent.name})[0];
+                    if(foundComponent != null){
+                        component = foundComponent;
+                    }
+                });
+            }
+        }
+    }
+    else if(targetComponent.type == "c"){
+        component = myComponentList.where({name:targetComponent.name})[0];
+    }
+    displayComponent(component);
 }
 
 /*
@@ -689,3 +838,44 @@ function decode(content){
     return cont;
 }
 
+function setMenuHandlers(menu){
+    var timeOut = null;
+    menu.mouseenter(function(event){
+        if(timeOut != null){
+            clearTimeout(timeOut);
+        }
+        showMenu(menu.children("ul"));
+    }).mouseleave(function(event){
+        timeOut = setTimeout(function(){
+            hideMenu(menu.children("ul"));
+        }, 300);
+    });
+}
+
+function showMenu(parent){
+    var list = parent.removeClass("hidden").addClass("visable");
+    var children = list.children("li");
+    children.removeClass("hidden").addClass("visable");
+}
+
+function hideMenu(parent){
+    var list = parent.removeClass("visable").addClass("hidden");
+    var children = list.children("li");
+    children.removeClass("visable").addClass("hidden");
+}
+
+function showOpenComponents(menu, button){
+    var items = menu.find('.hidden');
+    items.removeClass("hidden").addClass("visable");
+    button.unbind("click").click(function(event){
+        hideOpenComponents(menu, button);
+    });
+}
+
+function hideOpenComponents(menu, button){
+    var items = menu.find('.visable');
+    items.removeClass("visable").addClass("hidden");
+    button.unbind("click").click(function(event){
+        showOpenComponents(menu, button);
+    });
+}

@@ -1,0 +1,48 @@
+<div id="menu_bar">
+    <div id="project_menu" class="menu pane_left">
+        <ul>
+            <li><h2>Projects (${_selectedProject.name})</h2>
+                <ul id="project_list">
+                    #{list items:_currentProjects, as:'project' }
+                        <li class="project hidden">
+                            <a href="?p=${project.id}">${project.name}</a>
+                        </li>
+                    #{/list}
+                    #{secure.check 'admin'}
+                        <li class="hidden"><a href="projects">Project Admin</a></li>
+                    #{/secure.check}
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div id="component_menu" class="menu pane_left">
+        <ul>
+            <li><h2>Components</h2>
+                <ul id="component_list">
+                    <li id="facilities" class="hidden"><a class="component">Facilities</a><ul></ul></li>
+                    <li id="concepts" class="hidden"><a class="component">Concepts</a><ul></ul></li>
+                    #{secure.check 'superuser'}
+                    <li id="theories" class="hidden"><a class="component">Theories</a><ul></ul></li>
+                    #{/secure.check}
+                    #{secure.check 'user'}
+                    <li class="hidden"><a class="creater">Create</a></li>
+                    <li class="hidden"><a class="loader">Load</a></li>
+                    #{/secure.check}
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <!--<div id="help_container" class="menu pane_right"></div>
+    <div id="env_menu" class="menu pane_right"></div>-->
+</div>
+
+<script type="text/javascript">
+    var projects = $("#project_list li");
+    setMenuHandlers($("#project_menu li"));
+    //projects.click(function(event){
+        //event.preventDefault();
+        //var id = $(event.currentTarget).attr("data-id");
+        //document.location.href = "/?proj="+id;
+    //});
+    $("#menu_list").css({display:""});
+</script>

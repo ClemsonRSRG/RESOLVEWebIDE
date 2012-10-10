@@ -8,7 +8,7 @@ function addErrors(errorArray, component, errMsg) {
    var fileName = component.get("name");
    var errorLines = new Array();
 
-   var editorLength = doc.getValue().split(/\n/).length;   
+   var editorLength = session.doc.getValue().split(/\n/).length;   
 
    for(var i=0; i < errorArray.length; i++) {
        var error = errorArray[i].error;
@@ -80,6 +80,16 @@ function addErrors(errorArray, component, errMsg) {
         var errorMsg = el.attr("title");
         //var that = $(this);
         if(errorMsg != ""){
+            var errorLine = el.html();
+            var errorCol = null;
+            jQuery.each(errors, function(index, item){
+                if(item.row + 1 == errorLine){
+                    errorCol = item.column;
+                }
+            });
+            var errorLines = errorMsg.split("\n");
+            var caratLine = errorLines[errorLines.length-2];
+            
             addQtip(el, errorMsg);
             /*el.attr({title: ""});
             $(this).qtip({
@@ -110,7 +120,7 @@ function addVcs(component, vcArray) {
    var session = editor.getSession();
    var fileName = component.get("name");
 
-   var editorLength = doc.getValue().split(/\n/).length;   
+   var editorLength = session.doc.getValue().split(/\n/).length;   
 
    for(var i=0; i < vcArray.length; i++) {
        //var loc = vcArray[i].step.match(/: [a-zA-Z_0-9.]+/g);
@@ -299,7 +309,8 @@ function addVcs(component, vcArray) {
 }
 
 function addWaitGif(div){
-    var smallWaitGif = "public/images/wait20trans.gif";
+    var loc = window.location;
+    var smallWaitGif = loc.origin+(loc.pathname.length>1?loc.pathname+"/":loc.pathname)+"public/images/wait20trans.gif";
     var waitGif = $("<img>").attr({src:smallWaitGif, alt:"WaitGif"});
     waitGif.addClass("waitGif");
     div.append(waitGif);

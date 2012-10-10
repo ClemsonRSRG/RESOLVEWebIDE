@@ -1,0 +1,27 @@
+<div id="user_bar">
+    <span id="user_greeting">
+        Welcome 
+        #{if _currentUser != null}
+            <!--<button id="control_logout">Logout</button>-->
+            ${_currentUser.firstName}
+        #{/if}
+        #{else}
+            User
+        #{/else}
+    </span>
+    <div id="user_controls" class="pane_right">
+        #{if _currentUser != null}
+            <!--<button id="control_logout">Logout</button>-->
+            <a href="@{Secure.logout()}">Log out</a>
+        #{/if}
+        #{else}
+            <a href="@{Secure.login()}">Sign in</a>
+        #{/else}
+        #{if request.controller == 'Projects'}
+        <a href="@{Interface.index()}">Home</a>
+        #{/if}
+        <button id="control_settings">Settings</button>
+    </div>
+    <!--<div id="help_container" class="menu pane_right"></div>
+    <div id="env_menu" class="menu pane_right"></div>-->
+</div>

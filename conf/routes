@@ -4,6 +4,9 @@
 
 # Home page
 GET     /                                       Interface.index
+GET     /projects                               Projects.projects
+POST    /WebCompiler                            WebCompiler.compile
+WS      /Compiler                               CompilerSocket.compile
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
@@ -13,3 +16,6 @@ GET     /public/                                staticDir:public
 
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}
+
+# Import Secure routes
+*       /                                       module:secure
