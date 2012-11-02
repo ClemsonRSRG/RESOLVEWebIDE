@@ -19,8 +19,9 @@ public class User extends Model {
     public String firstName;
     public String lastName;
     public String password;
-    public String userType;
-    public String lastLogin;
+    public int userType;
+    public Date lastLogin;
+    public Date createdOn;
     public String currentProject;
     public Boolean authenticated;
     public String confirmationCode;
@@ -30,11 +31,21 @@ public class User extends Model {
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        userType = "user";
+        createdOn = new Date();
+        currentProject = Project.getDefault().name;
+        userType = 0;
+        authenticated = false;
+        confirmationCode = "";
     }
     
     public static User connect(String email, String password) {
         return find("byEmailAndPassword", email, passWordHash(password)).first();
+    }
+    
+    public static void lastLogin(String email, String password) {
+        User currentUser = find("byEmailAndPassword", email, passWordHash(password)).first();
+        currentUser.lastLogin = new Date();
+        currentUser.save();
     }
     
     // SHA-256 password hashing

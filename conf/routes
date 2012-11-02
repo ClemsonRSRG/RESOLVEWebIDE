@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                                       Interface.index
+GET     /registration                           Registration.index
 GET     /projects                               Projects.projects
 POST    /WebCompiler                            WebCompiler.compile
 WS      /Compiler                               CompilerSocket.compile

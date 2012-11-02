@@ -5,12 +5,19 @@ import models.*;
 public class Security extends Secure.Security {
     
     static boolean authenticate(String email, String password) {
-        return User.connect(email, password) != null;
+        boolean retval = false;
+        if (User.connect(email, password) != null) {
+            retval = true;
+            
+            // Set the last login date
+            User.lastLogin(email, password);
+        }
+        return retval;
     }
     
     static boolean check(String requires) {
-        String userLevel = User.find("byEmail", connected()).<User>first().userType;
-        if(hasAccess(requires, Integer.parseInt(userLevel))) {
+        int userLevel = User.find("byEmail", connected()).<User>first().userType;
+        if(hasAccess(requires, userLevel)) {
             return true;
         }
         return false;

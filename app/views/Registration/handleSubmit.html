@@ -1,0 +1,15 @@
+#{extends 'main.html' /}
+
+<h1>New user created successfully!</h1>
+
+<p>
+    <strong>Login Username</strong>: ${email}
+</p>
+<p>
+    <strong>First name</strong>: ${firstName}
+</p>
+<p>
+    <strong>Last name</strong>: ${lastName}
+</p>
+
+#{a @Interface.index()}Back#{/a}

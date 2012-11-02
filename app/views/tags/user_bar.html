@@ -17,6 +17,7 @@
             <button id="control_export">Export</button>
         #{/if}
         #{else}
+            <a href="@{Registration.index()}">Register</a>
             <a href="@{Secure.login()}">Sign in</a>
         #{/else}
         #{if request.controller == 'Projects'}
