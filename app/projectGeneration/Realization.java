@@ -17,12 +17,13 @@ public class Realization {
         private String dirName;
 	private String body;
         private String type;
+        private String parent;
 
-	public Realization(String n, String d, String path, String t){
+	public Realization(String n, String d, String path, String t, String parent){
 		name = n;
                 dirName = d;
                 type = t;
-
+                this.parent = parent;
 
                 boolean noComments = true;
 		SourceFile sf = new SourceFile(path, noComments);
@@ -59,6 +60,9 @@ public class Realization {
             sb.append("\",");
             sb.append("\"pkg\":\"");
             sb.append(dirName);
+            sb.append("\",");
+            sb.append("\"parent\":\"");
+            sb.append(parent);
             sb.append("\",");
             sb.append("\"custom\":\"false\",");
             sb.append("\"content\":\"");

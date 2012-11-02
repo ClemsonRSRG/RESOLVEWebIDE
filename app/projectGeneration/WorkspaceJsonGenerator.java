@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -143,7 +144,7 @@ public class WorkspaceJsonGenerator {
                                     String name =  Realization.getName(fileList[l].getName());
                                     String path = conceptDir + fileList[l].getName();
                                     String fileName = fileList[l].getName();
-                                    Realization r = new Realization(name, dirName, conceptDir + fileName, "er");
+                                    Realization r = new Realization(name, dirName, conceptDir + fileName, "er", eName);
                                     //Check to see if the realization is for this enhancement
                                     //if(r.isEnhRealiz(conceptDirName + "_Template;", eName, path, out)){
                                     if(r.isEnhRealiz(conceptDirName + ";", eName, path)){
@@ -163,7 +164,7 @@ public class WorkspaceJsonGenerator {
                             String name =  Realization.getName(fileList[k].getName());
                             String path = conceptDir + fileList[k].getName();
                             String fileName = fileList[k].getName();
-                            Realization r = new Realization(name, dirName, conceptDir + fileName, "r");
+                            Realization r = new Realization(name, dirName, conceptDir + fileName, "r", dirName);
 
                             //Check to see if the realization is for this enhancement
                             //if(r.isConRealiz(conceptDirName + "_Template;", path, out)){
@@ -261,7 +262,7 @@ public class WorkspaceJsonGenerator {
                                             String name =  Realization.getName(fileList[l].getName());
                                             String path = conceptDir + fileList[l].getName();
                                             String fileName = fileList[l].getName();
-                                            Realization r = new Realization(name, dirName, conceptDir + fileName, "er");
+                                            Realization r = new Realization(name, dirName, conceptDir + fileName, "er", eName);
                                             //Check to see if the realization is for this enhancement
                                             if(r.isEnhRealiz(conceptPath, eName, path)){
                                                 if(!hideStandard){
@@ -284,7 +285,7 @@ public class WorkspaceJsonGenerator {
                                     String name =  Realization.getName(fileList[l].getName());
                                     String path = conceptDir + fileList[l].getName();
                                     String fileName = fileList[l].getName();
-                                    Realization r = new Realization(name, dirName, conceptDir + fileName, "r");
+                                    Realization r = new Realization(name, dirName, conceptDir + fileName, "r", dirName);
 
                                     //Check to see if the realization is for this enhancement
                                     if(r.isConRealiz(conceptPath, path)){
@@ -614,6 +615,17 @@ public class WorkspaceJsonGenerator {
         String encoded = null;
         try {
             encoded = URLEncoder.encode(raw.replaceAll(" ", "%20"), "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(WorkspaceJsonGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return encoded;
+    }
+    
+    public static String decode(String raw){
+        String encoded = null;
+        try {
+            encoded = URLDecoder.decode(raw, "UTF-8");
+            encoded = encoded.replaceAll("%20", " ");
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(WorkspaceJsonGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -8,12 +8,14 @@
     <link rel="stylesheet" href="@{'/public/stylesheets/output.css'}" type="text/css" media="screen" charset="${_response_encoding}">
     <link rel="stylesheet" href="@{'/public/stylesheets/jquery-ui-1.8.20.custom.css'}" type="text/css" media="screen" charset="${_response_encoding}">
     <link rel="stylesheet" href="@{'/public/stylesheets/jquery.qtip.min.css'}" type="text/css" media="screen" charset="${_response_encoding}">
+    <link rel="stylesheet" href="@{'/public/stylesheets/jquery.contextMenu.css'}" type="text/css" media="screen" charset="${_response_encoding}">
 #{/set}
 
 #{set 'includeScripts'}
     <script type="text/javascript" src="@{'/public/javascripts/libraries/jquery-1.7.2.min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/libraries/jquery-ui-1.8.20.custom.min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/libraries/jquery.qtip.min.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/libraries/jquery.contextMenu.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/libraries/underscore-1.3.3.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/libraries/backbone-0.9.2.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/libraries/backbone-relational.js'}"></script>
@@ -23,7 +25,7 @@
     <script type="text/javascript" src="@{'/public/javascripts/antlr/antlr3-all-min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/antlr/RParser-min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/antlr/RLexer-min.js'}"></script>
-    <!--<script type="text/javascript" src="js/menuHandlers.js"></script>-->
+    <script type="text/javascript" src="@{'/public/javascripts/menuHandlers.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/menus.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/components.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/editor.js'}"></script>
@@ -43,6 +45,12 @@
             var components = null;
             var json = "${selectedProject.jsonRep}".replace(/&quot;/g,'"');
             components = JSON.parse(json);
+            var userComponents = null;
+            #{if ucs != null}
+                userComponents = "${ucs}".replace(/&quot;/g,'"');
+                userComponents = userComponents.replace(/\\n/g,'\\\\n');
+                userComponents = JSON.parse(userComponents);
+            #{/if}
             var targetComponent = null;
             #{if f != null}
                 targetComponent = {type:"f",name:"${f}"};
@@ -59,7 +67,13 @@
                 $("#content").outerHeight($(window).outerHeight(true)-1);
                 $("#content").css({margin:"auto"});
                 //intializeUserControls();
-                initializeComponentMenu(components);
+                initializeProjectHandlers();
+                initializeComponents(components);
+                if(userComponents != null){
+                    initializeUserComponents(userComponents);
+                }
+                initializeComponentMenu();
+                initializeContextMenu("${user}");
                 //setMenuHandlers($("#project_list"));
                 //initializeMenuBar();
                 //initializeOutput();
@@ -130,6 +144,7 @@
             </div>
         </div>-->
     <!--</div>-->
+#{finder userComponents:ucs/}
 <div id="dialog_new" class="hidden">create new component dialog</div>
 <div id="dialog_load" class="hidden">load new component dialog</div>
 

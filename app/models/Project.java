@@ -10,7 +10,7 @@ import play.db.jpa.Model;
  * @author Chuck
  */
 @Entity
-@Table(name="Projects")
+@Table(name="projects")
 public class Project extends Model {
     public String name;
     public String ownerEmail;

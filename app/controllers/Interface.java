@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.gson.Gson;
 import play.*;
 import play.mvc.*;
 
@@ -7,6 +8,7 @@ import java.util.*;
 import java.util.logging.Level;
 import models.Project;
 import models.User;
+import models.UserComponent;
 import play.cache.Cache;
 
 //import models.*;
@@ -47,11 +49,12 @@ public class Interface extends Controller {
             email = Security.connected();
             projects.addAll(Project.getUserProjects(email));
         }
+        Project proj = null;
         renderArgs.put("projects", projects);
         Long selectedProject = params.get("p", Long.class);
         //Long selectedProject = new Long(0);
         if(selectedProject != null){
-            Project proj = Project.getProject(selectedProject, email);
+            proj = Project.getProject(selectedProject, email);
             if(proj != null){
                 String concept = params.get("c", String.class);
                 String er = params.get("er", String.class);
@@ -78,8 +81,26 @@ public class Interface extends Controller {
             }
         }
         else{
-            renderArgs.put("selectedProject", Project.getDefault());
+            proj = Project.getDefault();
+            renderArgs.put("selectedProject", proj);
         }
+        String userComponents = null;
+        if(email != null){
+            userComponents = "{\"components\":[";
+            User currUser = User.find("byEmail", email).first();
+            List<UserComponent> components = UserComponent.find("byAuthor_idAndProject", currUser.id, proj.name).fetch();
+            Iterator it = components.iterator();
+            while(it.hasNext()){
+                UserComponent uc = (UserComponent)it.next();
+                userComponents += uc.toJson();
+                if(it.hasNext()){
+                    userComponents += ",";
+                }
+            }
+            userComponents += "]}";
+            //System.out.println(userComponents);
+        }
+        renderArgs.put("ucs", userComponents);
         render();
     }
 

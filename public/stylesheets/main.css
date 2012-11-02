@@ -32,6 +32,10 @@
     display: none;
 }
 
+.namingError {
+    color: red;
+}
+
 .background {
     display: none;
     position: absolute;

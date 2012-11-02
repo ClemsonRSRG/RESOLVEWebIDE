@@ -13,6 +13,8 @@
         #{if _currentUser != null}
             <!--<button id="control_logout">Logout</button>-->
             <a href="@{Secure.logout()}">Log out</a>
+            <button id="control_import">Import</button>
+            <button id="control_export">Export</button>
         #{/if}
         #{else}
             <a href="@{Secure.login()}">Sign in</a>
@@ -20,7 +22,7 @@
         #{if request.controller == 'Projects'}
         <a href="@{Interface.index()}">Home</a>
         #{/if}
-        <button id="control_settings">Settings</button>
+        <!--<button id="control_settings">Settings</button>-->
     </div>
     <!--<div id="help_container" class="menu pane_right"></div>
     <div id="env_menu" class="menu pane_right"></div>-->
