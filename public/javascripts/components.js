@@ -161,6 +161,7 @@ var ComponentMenuView = Backbone.View.extend({
     // we render each ComponentView separately and add it to the appropriate list
     render: function(){
         var element = $(this.el);
+        var parentDiv = $(this.el).closest("div");
         var list = $("<ul>");
         element.html(list);
         //setMenuHandlers(componentmenu);
@@ -170,7 +171,13 @@ var ComponentMenuView = Backbone.View.extend({
             that._componentViews.push(new ComponentNameView({model:component}));
         });
         _(this._componentViews).each(function(cv){
-            list.append(cv.render().el);
+            if(parentDiv.attr("id") !== "user_component_list"){
+                list.append(cv.render(true).el);
+            }
+            else{
+                list.append(cv.render(false).el);
+            }
+            
         });
         var neHeight = element.outerHeight();
         var finderHeight = $("#finder").outerHeight();
@@ -211,20 +218,30 @@ var ComponentNameView = Backbone.View.extend({
         this.model.bind('change:name', this.render);
         this.model.bind('change:index', this.render);
     },
-    render: function(){
+    render: function(subMenuStatus){
         var component = this.model;
+        var parentDiv = $(this.el).closest("div");
+        var li = $(this.el);
         var id = component.get("pkg") + "." + component.get("name");
         var link = $("<a>").attr({"data-cid":this.model.cid,"data-id":id}).html(component.get("name"));
-        
-        if(component.get("type") === "er" || component.get("type") === "r"){
-            link.addClass("component_title");
+        if(typeof subMenuStatus === "undefined" || subMenuStatus){
+            if(component.get("type") === "er" || component.get("type") === "r"){
+                link.addClass("component_title");
+            }
+            else if(component.get("type") === "f" || component.get("type") === "t"){
+                link.addClass("component_title");
+            }
+            else{
+                link.addClass("component dir");
+            }
         }
         else{
-            link.addClass("component dir");
+            link.addClass("component_title");
         }
+            
         //var html = "<a data-cid=\"" + this.model.cid + "\" data-id=\"" + id + "\" class=\"component\">";
         //html += component.get("name") + "</a>";
-        $(this.el).html(link);
+        li.html(link);
         //var listParent = $(this.el).closest("div");
         //var parentId = listParent.attr("id");
         //link.attr({"data-linkId":(parentId !== "finder-main")?(parentId+"."+component.get("name")):component.get("name")});
@@ -323,11 +340,11 @@ var ComponentView = Backbone.View.extend({
         $(componentNameView.el).children("a").addClass("component_title").removeClass("component dir");
         var item;
         if(this.model.get("realizations").models.length > 0){
-            item = $("<li>").html($("<h2 class=\"dir\">").html("Realizations"));
+            item = $("<li>").html($("<a class=\"dir\">").html("Realizations"));
             item.appendTo($(this.el));
         }
         if(this.model.get("enhancements").models.length > 0){
-            item = $("<li>").html($("<h2  class=\"dir\">").html("Enhancements"));
+            item = $("<li>").html($("<a  class=\"dir\">").html("Enhancements"));
             item.appendTo($(this.el));
         }
         //$(this.el).html(html).append(list);
@@ -336,7 +353,7 @@ var ComponentView = Backbone.View.extend({
     events: {
         //"dblclick a.component" : "openComponent",
         "click a.component" : "openComponent",
-        "click h2" : "selectComponents"
+        "click a.dir" : "selectComponents"
     },
     openComponent: function(event){
         event.stopPropagation();
@@ -839,7 +856,7 @@ function initializeContextMenu(user){
             return {
                 callback: function(key, options) {
                     var m = "clicked: " + key;
-                    window.console && console.log(m) || alert(m); 
+                    //window.console && console.log(m) || alert(m); 
                 },
                 items: items
                 /*items: {
@@ -1271,27 +1288,29 @@ function getCreateMenuItems(model){
     return items;
 }
 
-function getSubmenuItems($trigger){
+function getSubmenuItems($trigger, user){
     var id = $trigger.closest("div").attr("id");
-    var items = {};
+    var items = {"fold1-key":{"name":"register for advanced functionality"}};
     if(id === "finder-main"){
-        items = {
-            "fold1-key1":{
-                "name": "concept",
-                callback: function(key, opt){
-                    genCreateForm("c", model);
-                }
-            },
-            "fold1-key2":{
-                "name": "facility",
-                callback: function(key, opt){
-                    genCreateForm("f", model);
-                }
-            },
-            "fold1-key3":{
-                "name": "theory",
-                callback: function(key, opt){
-                    genCreateForm("t", model);
+        if(user !== ""){
+            items = {
+                "fold1-key1":{
+                    "name": "new concept",
+                    callback: function(key, opt){
+                        genCreateForm("c", model);
+                    }
+                },
+                "fold1-key2":{
+                    "name": "new facility",
+                    callback: function(key, opt){
+                        genCreateForm("f", model);
+                    }
+                },
+                "fold1-key3":{
+                    "name": "new theory",
+                    callback: function(key, opt){
+                        genCreateForm("t", model);
+                    }
                 }
             }
         }
@@ -1300,59 +1319,99 @@ function getSubmenuItems($trigger){
         //var currentList = $("#finder").children().last().attr("id");
         var linkText = $trigger.html();
         if(linkText === "Realizations"){
-            var listParent = $trigger.closest("div");
-            var parentId = listParent.attr("id");
-            var currentList = parentId.split(".");
-            var parent = getNewModelParent(currentList, myComponentList);
-            items = {"fold1-key1":{
-                        "name": " new realization",
-                        callback: function(key, opt){
-                            genCreateForm("r", parent);
-                        }
-                    }};
-            
+            if(user !== ""){
+                var listParent = $trigger.closest("div");
+                var parentId = listParent.attr("id");
+                var currentList = parentId.split(".");
+                var parent = getNewModelParent(currentList, myComponentList);
+                items = {"fold1-key1":{
+                            "name": " new realization",
+                            callback: function(key, opt){
+                                genCreateForm("r", parent);
+                            }
+                        }};
+            }
         }
         else if(linkText === "Enhancements"){
-            listParent = $trigger.closest("div");
-            parentId = listParent.attr("id");
-            currentList = parentId.split(".");
-            parent = getNewModelParent(currentList, myComponentList);
-            items = {"fold1-key1":{
-                        "name": "new enhancement",
-                        callback: function(key, opt){
-                            genCreateForm("e", parent);
-                        }
-                    }};
+            if(user !== ""){
+                listParent = $trigger.closest("div");
+                parentId = listParent.attr("id");
+                currentList = parentId.split(".");
+                parent = getNewModelParent(currentList, myComponentList);
+                items = {"fold1-key1":{
+                            "name": "new enhancement",
+                            callback: function(key, opt){
+                                genCreateForm("e", parent);
+                            }
+                        }};
+            }
         }
         else{
             var cid = $trigger.attr("data-cid");
             var model = getModelByCid(myComponentList, cid);
             var type = model.get("type");
             if(type === "c"){
-                items = {
-                    "fold1-key1":{
-                        "name": "new realization",
-                        callback: function(key, opt){
-                            genCreateForm("r", model);
-                        }
-                    },
-                    "fold1-key2":{
-                        "name": "new enhancement",
-                        callback: function(key, opt){
-                            genCreateForm("e", model);
+                if(user !== ""){
+                    items = {
+                        "fold1-key1":{
+                            "name": "edit " + model.get("name"),
+                            callback: function(key, opt){
+                                displayComponent(model);
+                            }
+                        },
+                        "fold1-key2":{
+                            "name": "new realization",
+                            callback: function(key, opt){
+                                genCreateForm("r", model);
+                            }
+                        },
+                        "fold1-key3":{
+                            "name": "new enhancement",
+                            callback: function(key, opt){
+                                genCreateForm("e", model);
+                            }
                         }
                     }
                 }
+                else{
+                    items = {
+                        "fold1-key1":{
+                            "name": "edit " + model.get("name"),
+                            callback: function(key, opt){
+                                displayComponent(model);
+                            }
+                        }
+                    }
+                }
+                    
             }
             else if(type === "e"){
-                items = {
-                    "fold1-key1":{
-                        "name": "new realization",
-                        callback: function(key, opt){
-                            genCreateForm("r", model);
+                if(user !== ""){
+                    items = {
+                        "fold1-key1":{
+                            "name": "edit " + model.get("name"),
+                            callback: function(key, opt){
+                                displayComponent(model);
+                            }
+                        },
+                        "fold1-key2":{
+                            "name": "new realization",
+                            callback: function(key, opt){
+                                genCreateForm("r", model);
+                            }
                         }
                     }
                 }
+                else{
+                    items = {
+                        "fold1-key1":{
+                            "name": "edit " + model.get("name"),
+                            callback: function(key, opt){
+                                displayComponent(model);
+                            }
+                        }
+                    }
+                }    
             }
         }
             
@@ -1371,7 +1430,7 @@ function genCreateForm(type, parent){
     var el = $("#dialog_new");
     var d = el.dialog({
         width:400,
-        height:500,
+        height:200,
         resizable:false,
         draggable:false,
         //dialogClass: "menu",
