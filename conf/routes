@@ -13,6 +13,7 @@ PUT     /Components                             ComponentManager.update
 DELETE  /Components                             ComponentManager.del
 GET     /export                                 ComponentExporter.exportComponents
 POST    /import                                 ComponentImporter.importComponents
+GET     /download                               Downloader.download
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

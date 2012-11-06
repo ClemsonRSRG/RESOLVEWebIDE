@@ -1,6 +1,6 @@
 var TRANSLATE = "translateJava";
 var VCS = "genVCs";
-var BUILD = "build";
+var BUILD = "buildJar";
 var VERIFY = "verify";
 /* 
  * This file contains code for creating and using the ACE editor
@@ -243,7 +243,7 @@ UserControlView = Backbone.View.extend({
         var commands = $("<div>").html("").addClass("controls_commands");
         var zoomControls = $("<div>").addClass("controls_zoom");
         var translate = $("<button>").html("translate").addClass("translateJava command active shadow");
-        var build = $("<button>").html("build").addClass("build command active shadow");
+        var build = $("<button>").html("build").addClass("buildJar command active shadow");
         var vcs = $("<button>").html("VCs").addClass("vcs command active shadow");
         var verify = $("<button>").html("verify").addClass("verify command active shadow");
         var showJava = $("<div>").addClass("java");
@@ -335,7 +335,7 @@ UserControlView = Backbone.View.extend({
     },
     events: {
         "click .active.translateJava" : "compile",
-        "click .active.build" : "compile",
+        "click .active.buildJar" : "compile",
         "click .active.vcs" : "compile",
         "click .active.verify" : "verify",
         "click .active.save" : "save",
@@ -345,6 +345,9 @@ UserControlView = Backbone.View.extend({
         "click .minus" : "decreaseFontSize"
     },
     compile: function(event){
+        var openComponentTab = $("#open_menu").find(".component_tab.selected");
+        var infoBlock = openComponentTab.find(".componentInfo");
+        var waitGif = addWaitGif(infoBlock);
         var targetJob = null;
         var targetButton = $(event.currentTarget);
         // these classes must match what is assigned in the render function above
@@ -353,7 +356,7 @@ UserControlView = Backbone.View.extend({
         if(targetButton.hasClass("translateJava")){
             targetJob = TRANSLATE;
         }
-        else if(targetButton.hasClass("build")){
+        else if(targetButton.hasClass("buildJar")){
             targetJob = BUILD;
         }
         else if(targetButton.hasClass("vcs")){
@@ -380,9 +383,6 @@ UserControlView = Backbone.View.extend({
             index++;
         });
         userJSON += "]"
-        var openComponentTab = $("#open_menu").find(".component_tab.selected");
-        var infoBlock = openComponentTab.find(".componentInfo");
-        var waitGif = addWaitGif(infoBlock);
         //var elementClass = $(event.currentTarget).attr("class");
         //ajaxCompile(targetJob, targetJSON, waitGif, model);
         wsCompile(targetJob, targetJSON, waitGif, model);
@@ -519,7 +519,7 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
     var pathname = loc.pathname;
     pathname = pathname.substring(0,pathname.lastIndexOf("/"));
     //var url = "ws://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Compiler";
-    var url = "ws://" + loc.host + (loc.pathname.length>1?loc.pathname:loc.pathname) + "Compiler";
+    var url = "ws://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Compiler";
     var params = "?job=" + targetJob + "&target=" + targetJSON + "&project=" + selectedProject;
     var new_uri = url + params;
     if ('WebSocket' in window) {
@@ -538,20 +538,20 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
             $("#console-info").append(resultJSON.msg+"<br/>");
         }
         else if(status == "complete"){
-            analyzeResults(resultJSON, model);
+            analyzeResults(resultJSON, model, waitGif);
         }
         else if(status == "error"){
             handleErrors(resultJSON, model);
         }
     };
     ws.onclose = function (event) {
-        waitGif.remove();
+        //console.log(event);
     };
         
     //new Socket(new_uri+"?target="+targetJSON);
 }
 
-function analyzeResults(resultJSON, component){
+function analyzeResults(resultJSON, component, waitGif){
     if(resultJSON.job == TRANSLATE){
         var EditSession = require("ace/edit_session").EditSession;
         var javaCode = resultJSON.result;
@@ -621,11 +621,67 @@ function analyzeResults(resultJSON, component){
         triggerConsole();
     }
     else if(resultJSON.job == BUILD){
-        
+        var buildResult = jQuery.parseJSON(decode(resultJSON.result));
+        var facName = buildResult.jarName;
+        var downloadDir = buildResult.downloadDir;
+        var downloadButton = $("<button>").val("download").text("Download");
+        downloadButton.click(function(event){
+            event.preventDefault();
+            var loc = window.location;
+            var pathname = loc.pathname;
+            pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+            //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
+            var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname)
+                    + "download?job=download&name=" + facName + "&dir=" + downloadDir;
+            window.location.href = url;
+            d.dialog("destroy");
+        });
+        var cancelButton = $("<button>").val("cancel").text("Cancel");
+        cancelButton.click(function(event){
+            event.preventDefault();
+            cancelJarDownload(facName, downloadDir, d);
+        });
+        var content = $("<div>").html("Succesfully built jar program for: " + facName + "<br/><br/>");
+        content.append(downloadButton);
+        content.append(cancelButton);
+        var el = $("#dialog_new");
+        var d = el.dialog({
+            width:400,
+            height:200,
+            resizable:false,
+            draggable:false,
+            //dialogClass: "menu",
+            modal: true,
+            close: function(event){
+                event.preventDefault();
+                cancelJarDownload(facName, downloadDir, d);
+            }
+        });
+        el.html(content);
     }
     else if(resultJSON.job == VERIFY){
         
     }
+    var openComponentTab = $("#open_menu").find(".component_tab.selected");
+    var infoBlock = openComponentTab.find(".componentInfo");
+    infoBlock.html("");
+    //waitGif.remove();
+}
+
+function cancelJarDownload(facName, downloadDir, d){
+    var loc = window.location;
+    var pathname = loc.pathname;
+    pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+    //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
+    var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname)
+            + "download?job=cancel&name=" + facName + "&dir=" + downloadDir;
+    $.ajax({
+        type: "GET",
+        url : url,
+        success: function(){
+            d.dialog("destroy");
+        }
+    });
 }
 
 function handleErrors(resultJSON, component){

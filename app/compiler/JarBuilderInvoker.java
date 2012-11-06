@@ -17,6 +17,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;
+import play.mvc.Http;
 //import webui.core.UserEvent;
 
 /**
@@ -26,21 +27,52 @@ import javax.servlet.http.HttpSession;
 public class JarBuilderInvoker {
     
     private String uploadedFileFacilityLoc;
-    private String jarTempLoc;
+    private String tempWsDir;
     private ResolveCompiler r;
     private String[] args;
+    private Http.Outbound myOutbound;
     
-    public JarBuilderInvoker(ResolveCompiler cr, String[] a, String upFileLoc, 
-            String jarTemp)
+    public JarBuilderInvoker(ResolveCompiler cr, String[] a,  
+            String twd, Http.Outbound outbound)
     {
         r = cr;
         args = a;
-        uploadedFileFacilityLoc = upFileLoc;
-        jarTempLoc = jarTemp;
+        tempWsDir = twd;
+        myOutbound = outbound;
     }
     
-    public StringBuffer generateFacility(MetaFile inputFile, String name)
+    public void generateFacilityJar(String job, MetaFile umf)
     {
+        OutboundMessageSender outbound = new OutboundMessageSender(myOutbound);
+        //Run the compiler
+        try{
+            r.compile(args);
+            
+        }
+        catch(Exception ex){
+            //obviously not too concerned about this situation ever happening
+        }
+        CompileReport cr = r.getReport();
+        boolean errors = false;
+        if(cr.hasErrors()){
+            errors = true;
+            outbound.sendErrors(job, cr.getErrors());
+        }
+        if(cr.hasBugReports()){
+            errors = true;
+            outbound.sendBugs(job, cr.getBugReports());
+        }
+        if(!errors){
+            StringBuilder resultMsg = new StringBuilder("{");
+            resultMsg.append("\"jarName\":\"");
+            resultMsg.append(umf.getMyFileName());
+            resultMsg.append("\",\"downloadDir\":\"");
+            resultMsg.append(tempWsDir);
+            resultMsg.append("\"}");
+            outbound.sendComplete(job, resultMsg.toString());
+        }
+        
+        /*
         String realName = name;
         StringBuffer opBuffer = new StringBuffer();
         Stack<String> userFileNames = new Stack<String>();
@@ -67,7 +99,7 @@ public class JarBuilderInvoker {
                 archived = true;
             }
             //r.resetReport();
-            copyFileToTempDir(jarFile, jarName, jarTempLoc);
+            copyFileToTempDir(jarFile, jarName, tempWsDir);
             //delete all the files created
             while(!userFileNames.isEmpty()){
                 File f = new File(userFileNames.pop());
@@ -120,7 +152,9 @@ public class JarBuilderInvoker {
         System.err.flush();
         System.out.flush();
         return opBuffer;
+        */
     }
+    
     
     private void copyFileToTempDir(String file, String name, String loc){
         File j = new File(file);

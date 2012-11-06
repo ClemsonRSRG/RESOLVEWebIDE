@@ -52,10 +52,14 @@ var Component = Backbone.RelationalModel.extend({
         collectionType: 'ComponentList'
     }],
     toJSON: function(){
+        var content = this.get("content");
+        // we need to escape quotes so that we have valid JSON going to the server
+        content = content.replace(/%22/g, "\\%22");
+        content = content.replace(/\"/g, "\\\"");
         var json = "{name:\"" + this.get("name") + "\"," +
             "pkg:\"" + this.get("pkg") + "\"," +
             "project:\"" + selectedProject + "\"," +
-            "content:\"" + this.get("content") + "\"," +
+            "content:\"" + content + "\"," +
             "parent:\"" + this.get("parent") + "\"," +
             "type:\"" + this.get("type") + "\"}";
             //JSON.stringify(this.get("component")) +
@@ -70,7 +74,7 @@ var Component = Backbone.RelationalModel.extend({
         var pathname = loc.pathname;
         pathname = pathname.substring(0,pathname.lastIndexOf("/"));
         //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname:loc.pathname) + "Components";
+        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
         return url;
         //return this.collection.url() + '/Components';
     }
@@ -982,7 +986,7 @@ function initializeUserComponents(userComponents){
         var pathname = loc.pathname;
         pathname = pathname.substring(0,pathname.lastIndexOf("/"));
         //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname:loc.pathname) + "export?project=" + selectedProject;
+        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "export?project=" + selectedProject;
         window.location.href = url;
     });
     
@@ -1236,7 +1240,7 @@ function importUserFiles(json, d){
     var pathname = loc.pathname;
     pathname = pathname.substring(0,pathname.lastIndexOf("/"));
     //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-    var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname:loc.pathname) + "import";
+    var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "import";
     $.ajax({
         type: "POST",
         url: url,

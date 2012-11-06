@@ -311,8 +311,9 @@ function addVcs(component, vcArray) {
 function addWaitGif(div){
     var loc = window.location;
     //var smallWaitGif = loc.origin+(loc.pathname.length>1?loc.pathname+"/":loc.pathname)+"public/images/wait20trans.gif";
-    var smallWaitGif = loc.origin+(loc.pathname.length>1?loc.pathname:loc.pathname)+"public/images/wait20trans.gif";
-    var waitGif = $("<img>").attr({src:smallWaitGif, alt:"WaitGif"});
+    //var smallWaitGif = loc.origin+(loc.pathname.length>1?loc.pathname+"/":loc.pathname)+"public/images/wait20trans.gif";
+    //var waitGif = $("<img>").attr({src:smallWaitGif, alt:"WaitGif"});
+    var waitGif = $("<div>");
     waitGif.addClass("waitGif");
     div.append(waitGif);
     return waitGif;

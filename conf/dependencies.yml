@@ -4,6 +4,8 @@ require:
     - play
     - resolve -> resolve
     - antlr-3.3-complete -> antlr
+    - tools -> tools
+    - mail -> mail
     
 repositories:
     - My modules:
@@ -12,3 +14,5 @@ repositories:
         contains:
             - resolve
             - antlr-3.3-complete
+            - tools
+            - mail

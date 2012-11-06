@@ -1,16 +1,20 @@
 package controllers;
 
 import com.google.gson.Gson;
+import compiler.JarBuilderInvoker;
 import compiler.JavaTranslatorInvoker;
 import compiler.VCGeneratorInvoker;
 import edu.clemson.cs.r2jt.ResolveCompiler;
 import edu.clemson.cs.r2jt.data.MetaFile;
 import edu.clemson.cs.r2jt.data.ModuleKind;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -32,7 +36,7 @@ public class CompilerSocket extends WebSocketController {
         String relativeMainDir = "RESOLVE" + slash + "Main" + slash;
         UserComponent uc = new Gson().fromJson(target, UserComponent.class);
         String workingDir = (String)Play.configuration.get("workingdir");
-        String compilerMainDir = workingDir + slash + uc.project + slash + relativeMainDir;
+        String compilerMainDir = workingDir + "workspaces" + slash + uc.project + slash + relativeMainDir;
         ResolveCompiler r = null;
         String msg = "{\"status\":\"info\",\"msg\":\"received " + job + ", launching\"}";
         outbound.send(msg);
@@ -83,6 +87,33 @@ public class CompilerSocket extends WebSocketController {
             VCGeneratorInvoker vcgi = new VCGeneratorInvoker(r, args, outbound);
             vcgi.generateVcs(job);
         }
+        else if(job.compareTo("buildJar") == 0){
+            
+            // we create a temporary version of the workspace with a hierarchy
+            // matching the userfiles for writing Java source and bytecode for the jar
+            String tempDir = Integer.toHexString(new Integer(new Random().nextInt())) +
+                                "_temp";
+            String tempWsDir = workingDir + "tempFiles" + slash +
+                                 tempDir + slash;
+            String tempMainDir = tempWsDir + "RESOLVE" + slash + "Main" + slash;
+            File tempWsDirFile = new File(tempWsDir);
+            tempWsDirFile.mkdir();
+            for(MetaFile mf: userFileMap.values()){
+                mf.setIsCustomLoc();
+                mf.setMyCustomPath(tempMainDir);
+                File tempFile = mf.getMyCustomFile();
+                tempFile.getParentFile().mkdirs();
+            }
+            umf.setJarTempDir(tempWsDir + "RESOLVE" + slash);
+            
+            //Constructing compiler
+            String[] args = {"-maindir", compilerMainDir, 
+                        "-createJar", "-verboseJar", "-webinterface"};
+            r = new ResolveCompiler(args, umf, userFileMap);
+
+            JarBuilderInvoker jbi = new JarBuilderInvoker(r, args, tempDir, outbound);
+            jbi.generateFacilityJar(job, umf);
+        }
         //System.out.println(decode(uc.content));
         //outbound.send(uc.name);
     }
@@ -95,6 +126,9 @@ public class CompilerSocket extends WebSocketController {
         //System.out.println(component.content);
         String pkg = component.pkg;
         ModuleKind kind = getFileKind(component.type);
+        if(kind.equals(ModuleKind.FACILITY)){
+            //pkg = "Facilities";
+        }
         targetFile = new MetaFile(fileName, pkg, pkg, fileSource, kind);
         return targetFile;
     }
