@@ -4,33 +4,30 @@
  */
 package compiler;
 
+import controllers.CompilerSocket;
 import edu.clemson.cs.r2jt.ResolveCompiler;
 import edu.clemson.cs.r2jt.compilereport.CompileReport;
-import play.mvc.Http;
-//import org.apache.catalina.websocket.WsOutbound;
-//import webui.utils.WebSocketWriter;
+import edu.clemson.cs.r2jt.data.MetaFile;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import play.mvc.Http.Outbound;
 //import webui.core.UserEvent;
 
-/**
- *
- * @author Parker
- */
-public class VerifyInvoker {
-
-    private ResolveCompiler r;
-    private String[] args;
-    private Http.Outbound myOutbound;
+public class PrettyTranslatorInvoker {
     
-    //public VerifyInvoker(String cmpDir, int proTime, StringBuffer sb)
-    public VerifyInvoker(ResolveCompiler rc, String[] a, Http.Outbound outbound)
+    private String args[];
+    private ResolveCompiler r;
+    private Outbound myOutbound;
+    
+    public PrettyTranslatorInvoker(ResolveCompiler c, String a[], Outbound outbound)
     {
-        r = rc;
         args = a;
+        r = c;
         myOutbound = outbound;
     }
-
     
-    public void verifyResolve(String job){
+    public void generateJava(String job)
+    {
         OutboundMessageSender outbound = new OutboundMessageSender(myOutbound);
         //Run the compiler
         try{
@@ -53,5 +50,6 @@ public class VerifyInvoker {
         if(!errors){
             outbound.sendComplete(job, cr.getOutput());
         }
-    }    
+    }
+    
 }

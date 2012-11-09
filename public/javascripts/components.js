@@ -71,10 +71,10 @@ var Component = Backbone.RelationalModel.extend({
     },
     url : function() {
         var loc = window.location;
-        var pathname = loc.pathname;
-        pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+        //var pathname = loc.pathname;
+        //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
         //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
+        var url = "http://" + getUrl(loc) + "Components";
         return url;
         //return this.collection.url() + '/Components';
     }
@@ -409,17 +409,22 @@ var OpenComponentListView = Backbone.View.extend({
         this._openComponentCount = 0;
         var that = this;
         this.collection.each(function(component){
-            var model = getModelByCid(myComponentList, component.get("cid"));
-            if(model.get("name") == component.get("name") &&
-                    model.get("pkg") == component.get("pkg")){
-                component.set("componentModel", model);
-                that._openComponents.push(component);
-                component.get("componentModel").bind("change:name", component.changeName, component);
+            var model = getModelById(myComponentList, component.id);
+            //var model = getModelByCid(myComponentList, component.get("cid"));
+            if(model != null){ // null check in case a user created component was open
+                if(model.get("name") == component.get("name") &&
+                        model.get("pkg") == component.get("pkg")){
+                    component.set("componentModel", model);
+                    that._openComponents.push(component);
+                    component.get("componentModel").bind("change:name", component.changeName, component);
+                }
             }
             else{
+                myOpenComponentList.remove(component);
                 log("couldn't find open component: "+component.get("name"));
             }
         });
+        updateOpenComponents(null);
         this.collection.bind( 'add', this.added, this );
         this.collection.bind( 'remove', this.removed, this );
         this.render();
@@ -481,10 +486,13 @@ var OpenComponentListView = Backbone.View.extend({
         var menuLeft = openMenuDiv.position().left;
         var menuRightSide = menuLeft + openMenuDiv.width();
         var itemPos = item.position();
-        var itemRightSide = menuLeft + itemPos.left + item.width();
+        var itemWidth = item.width();
+        var itemRightSide = menuLeft + itemPos.left + itemWidth;
         var listLeft = list.position().left;
         if(itemRightSide > menuRightSide){
-            list.css("left", listLeft - (itemRightSide - menuRightSide + 10));
+            var excess = "-" + (itemRightSide - menuRightSide + 10);
+            //list.css("left", excess);
+            list.animate({"left": excess}, "fast");
         }
         updateOpenComponents(component);
         //localStorage.localOpenComponentList = JSON.stringify(myOpenComponentList.toJSON());
@@ -507,7 +515,7 @@ var OpenComponentListView = Backbone.View.extend({
             }
             else{
                 this._selectedComponent = myOpenComponentList.at(newSelected).get("id");
-                model = myOpenComponentList.at(newSelected);
+                model = myOpenComponentList.at(newSelected).get("componentModel");
             }
             displayComponent(model);
         }
@@ -617,7 +625,7 @@ var OpenComponentView = Backbone.View.extend({
         //html += "title=\"" + component.get("name") + "\">";
         //html += component.get("componentModel").get("name") + "</a>";
         //$(this.el).html(html).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
-        $(this.el).append(link).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
+        $(this.el).html(link).append(getInfoBlock()).append(getCloseDiv()).addClass("component_tab");
         return this;
     },
     events: {
@@ -645,15 +653,32 @@ var OpenComponentView = Backbone.View.extend({
     },
     closeComponent: function(event){
         event.stopPropagation();
-        var openModel = this.model;
-        //var model = getModelByCid(myComponentList, openModel.get("cid"));
-        var prevIndex = _.indexOf(myOpenComponentList.models, openModel) - 1;
-        //if(prevIndex >= 0){
-            //var prevComponent = myOpenComponentList.at(prevIndex);;
-            //myOpenComponent_view._selectedComponent = prevComponent.get("pkg") + "." + prevComponent.get("name");
-        //}
-        openModel.unset("editorSession");
-        myOpenComponentList.remove(openModel);
+        var hasUnsavedChanges = true;
+        var link = $(event.currentTarget).parent().find("a");
+        var name = link.html();
+        var edited = name.match(/^<b>\*<\/b>(.)+/g);
+        var res = false;
+        if(edited == null){
+            hasUnsavedChanges = false;
+        }
+        if(hasUnsavedChanges){
+            res = confirm(this.model.get("name")+" has unsaved changes. Click OK to close without saving");
+        }
+        else{
+            res = true;
+        }
+        if(res){
+            var openModel = this.model;
+            //var model = getModelByCid(myComponentList, openModel.get("cid"));
+            var prevIndex = _.indexOf(myOpenComponentList.models, openModel) - 1;
+            //if(prevIndex >= 0){
+                //var prevComponent = myOpenComponentList.at(prevIndex);;
+                //myOpenComponent_view._selectedComponent = prevComponent.get("pkg") + "." + prevComponent.get("name");
+            //}
+            openModel.unset("editorSession");
+            myOpenComponentList.remove(openModel);
+        }
+            
     }
 });
 
@@ -698,6 +723,7 @@ function displayComponent(component){
             editorSession: session
         });
         myOpenComponentList.add(openComponent);
+        myOpenComponent_view.render();
     }
     if(session == null){
         var EditSession = require("ace/edit_session").EditSession;
@@ -708,11 +734,7 @@ function displayComponent(component){
         openComponent.set({"editorSession":session});
     }
     var dataIndex = component.get("index");
-    var search = "a[data-id=\"" + componentId + "\"]";
-    var link = $("#open_component_list").find(search);
-    var item = $(link).parent();
     $("#open_component_list>li.selected").removeClass("selected");
-    item.addClass("selected");
     if(component.get("type") == 't'){
         // readonly for theory files
         editor.setReadOnly(true);
@@ -726,22 +748,31 @@ function displayComponent(component){
     myUserControlView.render();
     updateSelectedComponent(component);
     updateOpenComponents(component);
+    var search = "a[data-id=\"" + componentId + "\"]";
+    var link = $("#open_component_list").find(search);
+    var item = $(link).parent();
+    item.addClass("selected");
     //localStorage.set(component.get("project") + "_selected_id", componentPkg + "." + componentName);
-    displayComponentInfo(component);
+    //displayComponentInfo(component);
     syntaxCheck(openComponent);
     session.on("change", function() {
       syntaxCheck(openComponent);
       if(openComponent.get("componentModel").get("custom") === "true"){
           var saveButton = $("#control_bar .save");
           saveButton.removeAttr("disabled").addClass("active");
-      }
-   });
-   //$("#component_list").removeClass("visible").addClass("hidden");
-   hideOpenComponents($("#open_menu"), $("#ocv_dropdown"));
-   //$("#open_component_dropdown").removeClass("visible").addClass("hidden");
-   scanToSelected(item);
-   clearConsole();
-   //clearVcInfo();
+          var name = link.html();
+          var edited = name.match(/^<b>\*<\/b>(.)+/g);
+          if(edited == null){
+              link.prepend("<b>*</b>");
+          }
+        }
+     });
+     //$("#component_list").removeClass("visible").addClass("hidden");
+     //hideOpenComponents($("#open_menu"), $("#ocv_dropdown"));
+     //$("#open_component_dropdown").removeClass("visible").addClass("hidden");
+     scanToSelected(item);
+     clearConsole();
+     //clearVcInfo();
 }
 
 function displayComponentInfo(component){
@@ -983,10 +1014,10 @@ function initializeUserComponents(userComponents){
     exportButton.click(function(event){
         event.preventDefault();
         var loc = window.location;
-        var pathname = loc.pathname;
-        pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+        //var pathname = loc.pathname;
+        //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
         //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-        var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "export?project=" + selectedProject;
+        var url = "http://" + getUrl(loc) + "export?project=" + selectedProject;
         window.location.href = url;
     });
     
@@ -1237,10 +1268,10 @@ function genImportJson(project, selectedFiles){
 
 function importUserFiles(json, d){
     var loc = window.location;
-    var pathname = loc.pathname;
-    pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+    //var pathname = loc.pathname;
+    //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
     //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-    var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "import";
+    var url = "http://" + getUrl(loc) + "import";
     $.ajax({
         type: "POST",
         url: url,
@@ -1486,7 +1517,7 @@ function genCreateForm(type, parent){
 function genNewConceptForm(parent, d){
     var form = $("<div>");
     form.html("Please enter a name for the concept:<br/>");
-    var name = $("<input>").attr({name:"name"});
+    var name = $("<input>").attr({id:"fileName",name:"name"});
     var submit = $("<input>").attr({"type":"button","value":"OK"});
     var error = $("<span>").addClass("namingError");
     form.append(name);
@@ -1514,10 +1545,14 @@ function genNewConceptForm(parent, d){
             myComponentList.add(newComponent);
             myConceptList.add(newComponent);
             myUserComponentList.add(newComponent)
-            newComponent.save();
-            newComponent.set("id", newName+"."+newName);
-            displayComponent(newComponent);
-            d.dialod.dg("destroy");
+            //newComponent.save();
+            var id = newName+"."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
+            //newComponent.set("id", newName+"."+newName);
+            //displayComponent(newComponent);
+            //d.dialod.dg("destroy");
         }
         else{
             error.html("A component with this name already exists!");
@@ -1531,7 +1566,7 @@ function genNewEForm(parent, d){
     var form = $("<div>");
     var text = "Please enter a name for the enhancement for " + parent.get("name") + ":<br/>";
     form.html(text);
-    var name = $("<input>").attr({name:"name"});
+    var name = $("<input>").attr({id:"fileName",name:"name"});
     var submit = $("<input>").attr({"type":"button","value":"OK"});
     var error = $("<span>").addClass("namingError");
     form.append(name);
@@ -1559,11 +1594,15 @@ function genNewEForm(parent, d){
                 type: "e"
             });
             parent.get("enhancements").add(newComponent);
-            myUserComponentList.add(newComponent)
-            newComponent.save();
-            newComponent.set("id", parent.get("pkg")+"."+newName);
-            displayComponent(newComponent);
-            d.dialog("destroy");
+            myUserComponentList.add(newComponent);
+            var id = parent.get("pkg")+"."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
+            //newComponent.save();
+            //newComponent.set("id", parent.get("pkg")+"."+newName);
+            //displayComponent(newComponent);
+            //d.dialog("destroy");
         }
         else{
             error.html("A component with this name already exists!");
@@ -1577,7 +1616,7 @@ function genNewCrForm(parent, d){
     var form = $("<div>");
     var text = "Please enter a name for the realization for " + parent.get("name") + ":<br/>";
     form.html(text);
-    var name = $("<input>").attr({name:"name"});
+    var name = $("<input>").attr({id:"fileName",name:"name"});
     var submit = $("<input>").attr({"type":"button","value":"OK"});
     var error = $("<span>").addClass("namingError");
     form.append(name);
@@ -1605,11 +1644,11 @@ function genNewCrForm(parent, d){
                 type: "r"
             });
             parent.get("realizations").add(newComponent);
-            myUserComponentList.add(newComponent)
-            newComponent.save();
-            newComponent.set("id", parent.get("pkg")+"."+newName);
-            displayComponent(newComponent);
-            d.dialog("destroy");
+            myUserComponentList.add(newComponent);
+            var id = parent.get("pkg")+"."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
         }
         else{
             error.html("A component with this name already exists!");
@@ -1624,7 +1663,7 @@ function genNewErForm(parent, d){
     var text = "Please enter a name for the realization for " + parent.get("name") + " of " +
                 myConceptList.where({"name":parent.get("pkg")})[0].get("name") + ":<br/>"
     form.html(text);
-    var name = $("<input>").attr({name:"name"});
+    var name = $("<input>").attr({id:"fileName",name:"name"});
     var submit = $("<input>").attr({"type":"button","value":"OK"});
     var error = $("<span>").addClass("namingError");
     form.append(name);
@@ -1652,11 +1691,15 @@ function genNewErForm(parent, d){
                 type: "er"
             });
             parent.get("realizations").add(newComponent);
-            myUserComponentList.add(newComponent)
-            newComponent.save();
-            newComponent.set("id", parent.get("pkg")+"."+newName);
-            displayComponent(newComponent);
-            d.dialog("destroy");
+            myUserComponentList.add(newComponent);
+            var id = parent.get("pkg")+"."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
+            //newComponent.save();
+            //newComponent.set("id", parent.get("pkg")+"."+newName);
+            //displayComponent(newComponent);
+            //d.dialog("destroy");
         }
         else{
             error.html("A component with this name already exists!");
@@ -1669,7 +1712,7 @@ function genNewErForm(parent, d){
 function genNewFacilityForm(parent, d){
     var form = $("<div>");
     form.html("Please enter a name for the facility:<br/>");
-    var name = $("<input>").attr({name:"name"});
+    var name = $("<input>").attr({id:"fileName",name:"name"});
     var submit = $("<input>").attr({"type":"button","value":"OK"});
     var error = $("<span>").addClass("namingError");
     form.append(name);
@@ -1680,7 +1723,7 @@ function genNewFacilityForm(parent, d){
     submit.click(function(event){
         event.preventDefault();
         var newName = name.attr("value");
-        var body = "Concept " + newName + ";\n\nend " + newName + ";";
+        var body = "Facility " + newName + ";\n\nend " + newName + ";";
         var foundNames = myFacilityList.where({"name":newName});
         if(foundNames.length == 0){
             var newComponent = new Component({
@@ -1689,18 +1732,22 @@ function genNewFacilityForm(parent, d){
                 enhancements: null,
                 //id: newName+"."+newName,
                 name: newName,
-                pkg: newName,
+                pkg: "facilities",
                 realizations: null,
                 standard: "false",
                 type: "f"
             });
             myComponentList.add(newComponent);
             myFacilityList.add(newComponent);
-            myUserComponentList.add(newComponent)
-            newComponent.save();
-            newComponent.set("id", "facilities."+newName);
-            displayComponent(newComponent);
-            d.dialog("destroy");
+            myUserComponentList.add(newComponent);
+            var id = "facilities."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
+            //newComponent.save();
+            //newComponent.set("id", "facilities."+newName);
+            //displayComponent(newComponent);
+            //d.dialog("destroy");
         }
         else{
             error.html("A component with this name already exists!");
@@ -1715,6 +1762,12 @@ function genNewTheoryForm(parent){
     var body = "Realization " + name + " for " + selectedCon.name +
                 ";\n\nend " + name + ";";
     return form;
+}
+
+function saveSuccess(newComponent, id, d){
+    newComponent.set("id", id);
+    displayComponent(newComponent);
+    d.dialog("destroy");
 }
 
 function prepMenu(link, newId){
@@ -1775,33 +1828,45 @@ function initializeOpenComponentList(selectedProjectName){
             var pkg = selectedComponentId.substring(selectedComponentId.indexOf(".")+1, selectedComponentId.length);
             var openModel = myOpenComponentList.where({"id": selectedComponentId});
             if(openModel.length != 0){
-                var model = getModelByCid(myComponentList, openModel[0].get("cid"));
+                var model = getModelById(myComponentList, openModel[0].id);
+                //var model = getModelByCid(myComponentList, openModel[0].get("cid"));
                 openComponent = model;
             }
         }
         else{
             openComponent = myOpenComponentList.at(0);
         }
-        displayComponent(openComponent);
+        if(openComponent != null){
+            displayComponent(openComponent);
+        }
+        else if(myOpenComponentList.length > 0){
+            displayComponent(myOpenComponentList.at(0).get("componentModel"));
+        }
         var item = $("#open_component_list>li.selected");
         //scanToSelected(item);
     }
 }
 
 function scanToSelected(item){
+    var itemPos = item.position();
+    /*if(itemPos == null){
+        itemPos = {top:0,left:0};
+    }*/
     var openMenuDiv = $("#open_components")
     var list = $("#open_component_list");
     var menuLeft = openMenuDiv.position().left;
     var menuRightSide = openMenuDiv.width();
-    var itemPos = item.position();
     var listLeft = list.position().left;
     var itemRightSide = itemPos.left + item.outerWidth(true);
     if(itemRightSide > menuRightSide){
-        list.css("left", listLeft - (itemRightSide - menuRightSide));
+        var excess = "-" + (itemRightSide - menuRightSide);
+        list.animate({"left": excess}, "fast");
+        //list.css("left", listLeft - (itemRightSide - menuRightSide));
     }
     else if(itemPos.left + listLeft < menuLeft){
-        list.css("left", 0);
-    }
+        list.animate({"left": -(itemPos.left - 5)}, "fast");
+        //list.css("left", 0);
+        }
 }
 
 function updateOpenComponents(component){
@@ -1906,6 +1971,46 @@ function getModelByCid(collection, cid){
         return comp;
     }
     return undefined;
+}
+
+function getModelById(collection, id){
+    var comp = collection.where({"id":id})[0];
+    if(comp == null){
+        var i = 0;
+        while(i < collection.models.length){
+            var realizations = collection.models[i].get("realizations");
+            comp = realizations.where({"id":id})[0];
+            if(comp == null){
+                var enhancements = collection.models[i].get("enhancements");
+                comp = enhancements.where({"id":id})[0];
+                if(comp == null){
+                    comp = getModelById(enhancements, id);
+                    if(comp == null){
+                        //return null;
+                    }
+                    else{
+                        return comp;
+                    }
+                }
+                else{
+                    return comp;
+                }
+            }
+            else{
+                return comp;
+            }
+            i++
+        }
+    }
+    else{
+        return comp;
+    }
+    return null;
+}
+
+function getTheoryOrFacilityByName(name, type){
+    var comp = myComponentList.where({"name":name, "type":type})[0];
+    return comp;
 }
 
 function getNewModelParent(currentList, list){

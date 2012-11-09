@@ -10,6 +10,11 @@ function intializeUserControls(){
     });
 }
 
+function logout(url){
+    localStorage.clear();
+    window.location.href=url;
+}
+
 function createLogoutDialog(){
     $.ajax({
         url: "login",

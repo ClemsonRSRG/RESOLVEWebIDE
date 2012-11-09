@@ -167,7 +167,9 @@
     width:18px;
     height:18px;
     margin: 2px 2px 2px 2px;
-    float: right;
+    /*float: right;*/
+    position: absolute;
+    right: 0px;
     background-image: url("../images/close.png");
     cursor: pointer;
 }
@@ -177,4 +179,6 @@
     width:15px;
     height:15px;
     margin: 2px 2px 0px 2px;
+    position: absolute;
+    right: 25px;
 }

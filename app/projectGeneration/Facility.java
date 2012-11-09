@@ -61,7 +61,7 @@ public class Facility {
         
     private String getComponentKey(){
         StringBuilder sb = new StringBuilder();
-        sb.append("facilities");
+        sb.append(dirName);
         sb.append(".");
         sb.append(name);
         return sb.toString();

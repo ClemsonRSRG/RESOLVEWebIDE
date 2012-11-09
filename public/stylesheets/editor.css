@@ -57,10 +57,10 @@
     font-size: 8pt;
 }
 
-#control_bat .active{
+/*#control_bar .active{
     cursor: pointer;
     text-shadow: 0 1px 1px rgba(0,0,0,.3);
-}
+}*/
 
 #control_bar .active:hover{
     color: #fff;
@@ -68,6 +68,16 @@
     -moz-box-shadow:    none;
     -webkit-box-shadow: none;
     box-shadow: none;
+}
+
+#control_bar .divider{
+    margin-left: 2px;
+    text-align: center;
+    padding: 0px 5px;
+    width: auto;
+    height: 20px;
+    float: left;
+    font-size: 8pt;
 }
 
 #control_bar .java{

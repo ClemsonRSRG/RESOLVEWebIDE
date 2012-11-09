@@ -73,7 +73,7 @@ function addErrors(errorArray, component, errMsg) {
    session.setAnnotations(errors);
    // @todo move this into a function, it is a duplicate of the the error tooltip in checker.js
     var gutters = $(".ace_error");
-    gutters.die("mouseover");
+    /*gutters.die("mouseover");
     gutters.live("mouseover", function(event){
         event.stopPropagation();
         var el = $(event.currentTarget);
@@ -91,23 +91,8 @@ function addErrors(errorArray, component, errMsg) {
             var caratLine = errorLines[errorLines.length-2];
             
             addQtip(el, errorMsg);
-            /*el.attr({title: ""});
-            $(this).qtip({
-                content: {
-                    text: "<pre>"+errorMsg+"</pre>"
-                }, 
-                show: {
-                    event: false, // Only show when show() is called manually
-                    ready: true // Also show on page load
-                },
-                hide: "unfocus"
-            });*/
         }
-        /*$(this).mouseout(function(){
-            $(this).attr({title: errorMsg});
-            that.qtip("api").hide();
-        });*/
-    });
+    });*/
 }
 
 var vcEditor;
@@ -141,6 +126,7 @@ function addVcs(component, vcArray) {
             msg += "\"goal\":\"" + vcArray[i].goal.replace(/\n/g, "") + "\",";
             msg += "\"given\":\"" + vcArray[i].given + "\"}";
             msg += "@";
+            msg = getVcSteps(encodeVcContent(msg));
             //msg = msg.replace(/\n/g, "");
             var lineNum = vcArray[i].line;
 
@@ -161,151 +147,28 @@ function addVcs(component, vcArray) {
    $("#vcs").empty();
    //logVCs(vcs);
    logVCs(vcArray);
-   /*if(selectedFile.fileType == "facility" && selectedFile.javaEditorSession != null){
-       var simpleJavaDoc = selectedFile.javaEditorSession.doc;
-       simpleJavaDoc._emit("annotate",vcs);
-   }*/
+   var javaSession = component.get("componentModel").get("javaEditorSession");
+   if(component.get("type") === "f" && javaSession != null){
+       //var simpleJavaDoc = selectedFile.javaEditorSession.doc;
+       javaSession.doc._emit("annotate",vcs);
+   }
     //var t, timerSet, title, lastTarget;
     //var targetId = targetContent.attr("id");
     //var vcIcon = $("#"+targetId).find(".ace_gutter-cell.ace_vc");
     var vcIcon = $("#code_editor").find(".ace_gutter-cell.ace_vc");
+    
     //var vcCorrectIcon = $("#codeEditor").find(".ace_gutter-cell.ace_vc_selected");
     //var vcCloseIcon = $(".vc_close");
     vcIcon.die();
-    //vcCorrectIcon.die();
-    /*vcIcon.live("mouseover", function(target){
-        //bindMouseover(target, vcs, doc);
-        var dataVcs = $(target.target).attr("data-vcs");
-        if(dataVcs == null){
-            var vcs = $(target.target).attr("title");
-            var vcSteps = getVcSteps(encodeVcContent(vcs));
-            $(target.target).attr("title", vcSteps);
-            $(target.target).attr("data-vcs", vcs);
-        }            
-        //$(target.target).attr("title", vcs);
-    });*/
-        
-    //var gutters = $(".ace_vcs");
-    //gutters.die("mouseover");
-    vcIcon.live("mouseenter", function(event){
-        event.stopPropagation();
-        var el = $(event.currentTarget);
-        var vcs = el.attr("title");
-        //var dataVcs = el.attr("data-vcs");
-        //if(dataVcs == null){
-            //el.attr("data-vcs", vcs);
-        //}
-        var vcSteps = getVcSteps(encodeVcContent(vcs));
-        //var that = $(this);
-        if(vcs != ""){
-            addQtip(el, vcSteps, "vc");
-            //el.attr({title: ""});
-            /*el.qtip({
-                content: {
-                    text: "<pre>"+vcSteps+"</pre>"
-                }, 
-                show: {
-                    event: false, // Only show when show() is called manually
-                    ready: true // Also show on page load
-                }//,
-                //hide: {
-                    //event: 'mouseleave'
-                //},
-                //events: {
-                    //hide: function(event, api){
-                        //var tooltip = api.elements.tooltip;
-                        //console.log("hide called");
-                        //el.attr({title: vcs});
-                    //}
-                /}
-            });*/
-        }
-        //el.mouseleave(function(){
-            //el.attr({title: vcs});
-            //el.qtip("hide");
-            //el.qtip("api").hide();
-        //});
-    });
     vcIcon.live("click", function(target){
-        var session = editor.getSession();
-        var vcs = $(target.target).attr("title");
+        //var session = editor.getSession();
+        //var vcs = $(target.target).attr("title");
         var lineNum = $(target.target).html();
         selectVC(lineNum);
         //var formattedVCs = formatVCs(encodeVcContent(vcs));
         //selectVC(formattedVCs);
         //showVcBox($(target.target),encodeVcContent(title), vcs, session.doc);
     });
-   /*vcIcon.live("click", function(target) {
-       var session = editor.getSession();
-       clearLastSelected(vcs, session.doc);
-        //clearTimeout(t);
-        $(target.target).unbind("mouseout").bind("mouseout", function(target) {
-            $(target.target).attr("title", title);
-            lastTarget = $(target.target);
-        });
-        vcIcon.die("mouseover");
-        //vcIcon.live("mouseover", bindMouseover);
-        vcIcon.live("mouseover", function(target){
-            title = $(target.target).attr("title");
-            $(target.target).attr("title", "");
-            $(target.target).unbind("mouseout").bind("mouseout", function(target) {
-                $(target.target).attr("title", title);
-            });
-        });
-        //timerSet = false;
-        lastSelectedLineNum = $(target.target).html();
-        updateAndEmit(lastSelectedLineNum, "vc_selected", vcs, session.doc);
-        showVcBox($(target.target),encodeVcContent(title), vcs, session.doc);
-        //$.each(vcs,
-            //function(){
-                //var vcLineNum = this.row + 1;
-                //if(vcLineNum.toString() == lineNum){
-                    //this.type = "vc_correct";
-            //}
-        //});
-        //session.doc._emit("annotate", vcs);
-    });
-    vcCorrectIcon.live("mouseover", function(target){
-        title = $(target.target).attr("title");
-        $(target.target).attr("title", "Click to release this VC");
-        $(target.target).unbind("mouseout").bind("mouseout", function(target){
-            $(target.target).attr("title", title);
-        });
-    });
-    vcCorrectIcon.live("click", function(target){
-        var session = selectedFile.editorSession;
-        lastSelectedLineNum = null;
-        //title = $(target.target).attr("title");
-        //$(target.target).attr("title", "");
-        //$(target.target).unbind("mouseout").bind("mouseout", function(target){
-            //$(target.target).attr("title", title);
-        //});
-        vcIcon.die("mouseover");
-        //vcIcon.live("mouseover", bindMouseover);
-        vcIcon.live("mouseover", function(target){
-            bindMouseover(target, vcs, doc);
-        });
-        var lineNum = $(target.target).html();
-        updateAndEmit(lineNum, "vc", vcs, session.doc);
-        //$.each(vcs,
-            //function(){
-                //var vcLineNum = this.row + 1;
-                //if(vcLineNum.toString() == lineNum){
-                    //this.type = "vc";
-            //}
-        //});
-        //session.doc._emit("annotate", vcs);
-    });
-    vcCloseIcon.die();
-    vcCloseIcon.live("click", function(target){
-        //event.preventDefault();
-        hideVcBox(vcs, doc);
-        vcIcon.die("mouseover");
-        vcIcon.live("mouseover", function(target){
-            bindMouseover(target, vcs, doc);
-        });
-        return false;
-    });*/
 }
 
 function addWaitGif(div){

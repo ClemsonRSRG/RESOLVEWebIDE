@@ -32,7 +32,7 @@ function syntaxCheck(openComponent) {
     errorArray = new Array();
     antlrParse(openComponent);
     editorSession.doc._emit("annotate", errorArray);
-    var gutters = $(".ace_error");
+    /*var gutters = $(".ace_error");
     gutters.die("mouseover");
     gutters.live("mouseover", function(event){
         event.stopPropagation();
@@ -48,23 +48,8 @@ function syntaxCheck(openComponent) {
                 }
             });
             addQtip(el, errorMsg);
-            /*el.attr({title: ""});
-            $(this).qtip({
-                content: {
-                    text: "<pre>"+errorMsg+"</pre>"
-                }, 
-                show: {
-                    event: false, // Only show when show() is called manually
-                    ready: true // Also show on page load
-                },
-                hide: "unfocus"
-            });*/
         }
-        /*$(this).mouseout(function(){
-            $(this).attr({title: errorMsg});
-            that.qtip("api").hide();
-        });*/
-    });
+    });*/
     openComponent.set("syntaxErrors", errorArray);
     myUserControlView.render();
     //selectedFile.editor.resize();

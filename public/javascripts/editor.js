@@ -2,6 +2,9 @@ var TRANSLATE = "translateJava";
 var VCS = "genVCs";
 var BUILD = "buildJar";
 var VERIFY = "verify";
+var VCVERIFY = "vcVerify";
+var PRETTYJAVA = "prettyJavaTranslate"
+var PRETTYC = "prettyCTranslate";
 /* 
  * This file contains code for creating and using the ACE editor
  */
@@ -246,6 +249,11 @@ UserControlView = Backbone.View.extend({
         var build = $("<button>").html("build").addClass("buildJar command active shadow");
         var vcs = $("<button>").html("VCs").addClass("vcs command active shadow");
         var verify = $("<button>").html("verify").addClass("verify command active shadow");
+        var renderSpan = $("<div>").attr({id:"render-controls"}).addClass(" render command");
+        var javaRenderbox = $("<input>").attr({type:"checkbox","id":"javaCheckbox","data-type":"javaCheckbox"});
+        var javaRenderSpan = $("<label>").attr({"for":"javaCheckbox"}).html("Java Rendering");
+        var cRenderbox = $("<input>").attr({type:"checkbox","id":"cCheckbox","data-type":"cCheckbox"});
+        var cRenderSpan = $("<label>").attr({"for":"cCheckbox"}).html("C Rendering");
         var showJava = $("<div>").addClass("java");
         var inputID = "showJava";
         this._javaCheckbox = $("<input>").attr({type:"checkbox", id: inputID});
@@ -277,21 +285,32 @@ UserControlView = Backbone.View.extend({
                 translate.appendTo(commands);
                 vcs.appendTo(commands);
                 verify.appendTo(commands);
+                javaRenderbox.appendTo(renderSpan);
+                javaRenderSpan.appendTo(renderSpan);
+                cRenderbox.appendTo(renderSpan);
+                cRenderSpan.appendTo(renderSpan);
+                renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "t"){
                 
             }
             if(component.get("custom") === "true"){
+                var divider = $("<span>").html(" | ").addClass("divider");
                 var save = $("<button>").html("Save").addClass("save command shadow");
+                var rename = $("<button>").html("Rename").addClass("rename command active shadow");
                 var del = $("<button>").html("Delete").addClass("del command active shadow");
+                divider.appendTo(commands);
                 save.appendTo(commands);
-                save.attr({disable: "diabled"});
+                rename.appendTo(commands);
+                save.attr({disable: "disabled"});
                 del.appendTo(commands);
             }
             if(this.model.has("syntaxErrors") && this.model.get("syntaxErrors").length > 0){
                 var buttons = commands.find("button");
-                buttons.attr({disable: "diabled"});
+                buttons.attr({disable: "disabled"});
                 buttons.removeClass("active");
+                var renderers = commands.find(".render input");
+                renderers.attr({disabled: true});
                 var delButton = $("#control_bar.del");
                 if(delButton != null){
                     delButton.removeAttr("disabled").addClass("active");
@@ -338,6 +357,9 @@ UserControlView = Backbone.View.extend({
         "click .active.buildJar" : "compile",
         "click .active.vcs" : "compile",
         "click .active.verify" : "verify",
+        "click #javaCheckbox" : "prettyTranslate",
+        "click #cCheckbox" : "prettyTranslate",
+        "click .active.rename" : "rename",
         "click .active.save" : "save",
         "click .active.del" : "del",
         "click #showJava" : "showJava",
@@ -363,58 +385,93 @@ UserControlView = Backbone.View.extend({
             targetJob = VCS;
         }
         else if(targetButton.hasClass("verify")){
-            targetJob = VERIFY;
+            targetJob = VCVERIFY;
         }
         var model = this.model;
         var component = model.get("componentModel").clone();
         component.set("content", encode(editor.getSession().getValue()));
-        //var tc = new UserComponent({component: component, ws: "default"});
-        //var targetJSON = tc.toJSON();
         var targetJSON = component.toJSON();
-        var userJSON = "[";
-        var numOpenComponents = myOpenComponentList.size();
-        var index = 0;
-        myOpenComponentList.each(function(component){
-            var uc = new UserComponent({"component":component, ws: "default"});
-            userJSON += uc.toJSON();
-            if(index < numOpenComponents){
-                userJSON += ",";
-            }
-            index++;
-        });
-        userJSON += "]"
-        //var elementClass = $(event.currentTarget).attr("class");
-        //ajaxCompile(targetJob, targetJSON, waitGif, model);
         wsCompile(targetJob, targetJSON, waitGif, model);
-        
-        //log(json);
     },
     verify: function(event){
-        var ws = null;
-        var socketPing;
         var openComponentTab = $("#open_menu").find(".component_tab.selected");
         var infoBlock = openComponentTab.find(".componentInfo");
         var waitGif = addWaitGif(infoBlock);
-        
+        var targetJob = null;
+        var targetButton = $(event.currentTarget);
+        // these classes must match what is assigned in the render function above
+        // for the sevlet backend to understand what to do. That means the servlet
+        // must also match when it checks for the job parameter
+        if(targetButton.hasClass("translateJava")){
+            targetJob = TRANSLATE;
+        }
+        else if(targetButton.hasClass("buildJar")){
+            targetJob = BUILD;
+        }
+        else if(targetButton.hasClass("vcs")){
+            targetJob = VCS;
+        }
+        else if(targetButton.hasClass("verify")){
+            targetJob = VCVERIFY;
+        }
         var model = this.model;
         var component = model.get("componentModel").clone();
         component.set("content", encode(editor.getSession().getValue()));
-        var tc = new UserComponent({component: component, ws: "default"});
-        var targetJSON = tc.toJSON();
-        var userJSON = "[";
-        var numOpenComponents = myOpenComponentList.size();
-        var index = 0;
-        myOpenComponentList.each(function(component){
-            var uc = new UserComponent({"component":component, ws: "default"});
-            userJSON += uc.toJSON();
-            if(index < numOpenComponents){
-                userJSON += ",";
+        var targetJSON = component.toJSON();
+        wsCompile(targetJob, targetJSON, waitGif, model);
+    },
+    prettyTranslate : function(event){
+        var checkbox = $(event.currentTarget);
+        var javaCheckbox = $("#javaCheckbox");
+        var cCheckbox = $("#cCheckbox");
+        var thisCheckbox = (checkbox.attr("id") === javaCheckbox.attr("id"))?javaCheckbox:cCheckbox;
+        var thatCheckbox = (checkbox.attr("id") === javaCheckbox.attr("id"))?cCheckbox:javaCheckbox;
+        if(thisCheckbox.attr("checked")){
+            var openComponentTab = $("#open_menu").find(".component_tab.selected");
+            var infoBlock = openComponentTab.find(".componentInfo");
+            var waitGif = addWaitGif(infoBlock);
+            //var waitGif = addWaitGif(thisCheckbox.next());
+            //doPrettyJavaTranslate(selectedFile, checkbox, waitGif, targetContent);
+            thatCheckbox.attr({"disabled":true});
+            var model = this.model;
+            var component = model.get("componentModel").clone();
+            component.set("content", encode(editor.getSession().getValue()));
+            var targetJSON = component.toJSON();
+            var targetJob = "";
+            if(checkbox.attr("id") === javaCheckbox.attr("id")){
+                targetJob = PRETTYJAVA;
             }
-            index++;
-        });
-        userJSON += "]";
-        connect(ws, socketPing, model, targetJSON, waitGif);
-        $( "#output_tabs" ).tabs("select", 1);
+            else{
+                targetJob = PRETTYC;
+            }
+            wsCompile(targetJob, targetJSON, waitGif, model);
+        }
+        else{
+            thatCheckbox.attr({"disabled":false});
+            var resolveEditorSession = this.model.get("editorSession");
+            var commandButtons = $(".controls_commands").find("button");
+            commandButtons.attr({disable: ""});
+            commandButtons.addClass("active");
+            editor.setSession(resolveEditorSession);
+            editor.setReadOnly(false);
+            editor.setHighlightActiveLine(true);
+            //checkbox.attr("checked","");
+            /*selectedFile.editor.setSession(selectedFile.editorSession);
+            selectedFile.editor.setReadOnly(false);
+            $(selectedFile.editor.renderer.content).removeClass("javaRenderer");
+            selectedFile.editor.setHighlightActiveLine(true);
+            if(selectedFile.vcArray != null){
+                //var tempSession = selectedFile.editorSession;
+                //selectedFile.editorSession = selectedFile.javaEditorSession;
+                addVcs(selectedFile, selectedFile.vcArray);
+                //selectedFile.editorSession = tempSession;
+            }*/
+        }  
+    },
+    rename : function(event){
+        //var editorSession = this.model.get("editorSession");
+        //var code = editorSession.doc.getValue();
+        renameUserComponent(this.model);
     },
     save : function(event){
         var editorSession = this.model.get("editorSession");
@@ -423,12 +480,15 @@ UserControlView = Backbone.View.extend({
         model.set("content", code);
         model.save();
         $(event.currentTarget).attr({disable: "diabled"}).removeClass("active");
+        var openComponentTab = $("#open_menu").find(".component_tab.selected");
+        var editedIcon = openComponentTab.find("b");
+        editedIcon.remove();
     },
     del : function(event){
-        var model = this.model.get("componentModel");
+        var model = this.model;
         var ans = confirm("Are you sure you want to delete " + model.get("name") + "?");
         if(ans){
-            model.destroy();
+            deleteUserComponent(model);
         }
     },
     showJava : function(event){
@@ -474,6 +534,121 @@ UserControlView = Backbone.View.extend({
     }
 });
 
+function renameUserComponent(openModel){
+    var model = openModel.get("componentModel");
+    var code = "";
+    var el = $("#dialog_new");
+    var d = el.dialog({
+        width:400,
+        height:200,
+        resizable:false,
+        draggable:false,
+        //dialogClass: "menu",
+        modal: true
+    });
+    var form = $("<div>");
+    form.html("Please enter a new name for " + model.get("name") +":<br/>");
+    var name = $("<input>").attr({id:"fileName",name:"name"});
+    var submit = $("<input>").attr({"type":"button","value":"OK"});
+    var error = $("<span>").addClass("namingError");
+    form.append(name);
+    form.append("<br/>");
+    form.append(error);
+    form.append("<br/>");
+    form.append(submit);
+    submit.click(function(event){
+        event.preventDefault();
+        error.html("");
+        var oldName = model.get("name");
+        var newName = name.attr("value");
+        var newId = "";
+        var type = model.get("type");
+        if(type === "c"){
+            newId = newName;
+        }
+        else if(type === "e"){
+            newId = model.get("pkg");
+        }
+        else if(type === "r"){
+            newId = model.get("pkg");
+        }
+        else if(type === "f"){
+            newId = "facilities";
+        }
+        else if(type === "t"){
+            newId = "theories";
+        }
+        newId += "." + newName;
+        var existingModel = getModelById(myComponentList, newId);
+        if(existingModel != null){
+            error.html("A component with this name already exists!");
+        }
+        else{
+            if(type === "f" || type === "t"){
+                existingModel = getTheoryOrFacilityByName(newName, type);
+            }
+            if(existingModel != null){
+                error.html("A component with this name already exists!");
+            }
+            else{
+                // @todo ajax to update the component
+                error.html("good to go");
+                
+                var loc = window.location;
+                //var pathname = loc.pathname;
+                //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+                var url = "http://" + getUrl(loc) + "rename";
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: {
+                        job: "rename",
+                        newName: newName,
+                        target: model.toJSON()
+                    },
+                    success: function(data){
+                        model.set({"name": newName, "id":newId});
+                        model.id = newId;
+                        openModel.set({"name": newName, "id":newId});
+                        openModel.id = newId;
+                        updateOpenComponents(openModel);
+                        d.dialog("destroy");
+                    }
+                });
+            }    
+        }
+    });
+    el.html(form);
+    
+}
+
+function deleteUserComponent(openModel){
+    var model = openModel.get("componentModel");
+    var loc = window.location;
+    //var pathname = loc.pathname;
+    //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+    var url = "http://" + getUrl(loc) + "delete";
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: {
+            target: model.toJSON()
+        },
+        success: function(data){
+            model.id = null;
+            model.destroy();
+            openModel.id = null;
+            openModel.destroy();
+            updateOpenComponents(null);
+        }
+    });
+}
+
+
+function getRenameDialog(){
+    
+}
+
 function ajaxCompile(targetJob, targetJSON, waitGif, model){
     $.ajax({
         url: "WebCompiler",
@@ -516,10 +691,12 @@ function ajaxCompile(targetJob, targetJSON, waitGif, model){
 function wsCompile(targetJob, targetJSON, waitGif, model){
     var ws;
     var loc = window.location;
-    var pathname = loc.pathname;
-    pathname = pathname.substring(0,pathname.lastIndexOf("/"));
-    //var url = "ws://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Compiler";
-    var url = "ws://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Compiler";
+    var verify = false;
+    if(targetJob == VCVERIFY){
+        verify = true;
+        targetJob = VCS;
+    }
+    var url = "ws://" + getUrl(loc) + "Compiler";
     var params = "?job=" + targetJob + "&target=" + targetJSON + "&project=" + selectedProject;
     var new_uri = url + params;
     if ('WebSocket' in window) {
@@ -539,6 +716,19 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
         }
         else if(status == "complete"){
             analyzeResults(resultJSON, model, waitGif);
+            if(verify){
+                var vcSpans = $("#console-info").find(".vc_status");
+                vcSpans.each(function(){
+                    addWaitGif($(this));
+                })
+                targetJob = VERIFY;
+                wsCompile(targetJob, targetJSON, waitGif, model);
+            }
+            else{
+                var openComponentTab = $("#open_menu").find(".component_tab.selected");
+                var infoBlock = openComponentTab.find(".componentInfo");
+                infoBlock.html("");
+            }  
         }
         else if(status == "error"){
             handleErrors(resultJSON, model);
@@ -551,11 +741,25 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
     //new Socket(new_uri+"?target="+targetJSON);
 }
 
+function getUrl(loc){
+    var url = "";
+    var pathname = loc.pathname;
+    pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+    if(pathname.length == 0){
+        url = loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname);
+        
+    }
+    else{
+        url = loc.host + (loc.pathname.length>1?pathname+"/":loc.pathname);
+    }
+    return url;
+}
+
 function analyzeResults(resultJSON, component, waitGif){
     if(resultJSON.job == TRANSLATE){
         var EditSession = require("ace/edit_session").EditSession;
         var javaCode = resultJSON.result;
-        var javaSession = new EditSession(decode(javaCode));
+        var javaSession = new EditSession(formatCode(decode(javaCode)));
         var JavaMode = require("ace/mode/java").Mode;
         component.set("java", javaSession);
         editor.setReadOnly(true);
@@ -618,6 +822,7 @@ function analyzeResults(resultJSON, component, waitGif){
         //log("VCs complete");
         //selectedFile.vcArray = vcArray;
         addVcs(component, vcArray);
+        component.set("vcs", vcArray);
         triggerConsole();
     }
     else if(resultJSON.job == BUILD){
@@ -628,10 +833,10 @@ function analyzeResults(resultJSON, component, waitGif){
         downloadButton.click(function(event){
             event.preventDefault();
             var loc = window.location;
-            var pathname = loc.pathname;
-            pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+            //var pathname = loc.pathname;
+            //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
             //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-            var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname)
+            var url = "http://" + getUrl(loc)
                     + "download?job=download&name=" + facName + "&dir=" + downloadDir;
             window.location.href = url;
             d.dialog("destroy");
@@ -662,9 +867,44 @@ function analyzeResults(resultJSON, component, waitGif){
     else if(resultJSON.job == VERIFY){
         
     }
-    var openComponentTab = $("#open_menu").find(".component_tab.selected");
-    var infoBlock = openComponentTab.find(".componentInfo");
-    infoBlock.html("");
+    else if(resultJSON.job == PRETTYJAVA){
+        EditSession = require("ace/edit_session").EditSession;
+        javaCode = resultJSON.result;
+        javaSession = new EditSession(formatCode(decode(javaCode)));
+        JavaMode = require("ace/mode/java").Mode;
+        component.set("java", javaSession);
+        editor.setReadOnly(true);
+        editor.setSession(javaSession);
+        editor.getSession().setMode(new JavaMode());
+        //myUserControlView.render();
+        //myUserControlView._javaCheckbox.attr({checked: "checked"});
+        commandButtons = $(".controls_commands").find("button");
+        commandButtons.attr({disable: "diabled"});
+        commandButtons.removeClass("active");
+        $("#console-info").append("complete<br/>");
+        if(component.get("vcs") != null){
+            addVcs(component, component.get("vcs"));
+        }
+    }
+    else if(resultJSON.job == PRETTYC){
+        EditSession = require("ace/edit_session").EditSession;
+        var cCode = resultJSON.result;
+        javaSession = new EditSession(formatCode(decode(cCode)));
+        var CMode = require("ace/mode/c_cpp").Mode;
+        component.set("java", javaSession);
+        editor.setReadOnly(true);
+        editor.setSession(javaSession);
+        editor.getSession().setMode(new CMode());
+        //myUserControlView.render();
+        //myUserControlView._javaCheckbox.attr({checked: "checked"});
+        commandButtons = $(".controls_commands").find("button");
+        commandButtons.attr({disable: "diabled"});
+        commandButtons.removeClass("active");
+        $("#console-info").append("complete<br/>");
+        if(component.get("vcs") != null){
+            addVcs(component, component.get("vcs"));
+        }
+    }
     //waitGif.remove();
 }
 
@@ -672,8 +912,7 @@ function cancelJarDownload(facName, downloadDir, d){
     var loc = window.location;
     var pathname = loc.pathname;
     pathname = pathname.substring(0,pathname.lastIndexOf("/"));
-    //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
-    var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname)
+    var url = "http://" + getUrl(loc)
             + "download?job=cancel&name=" + facName + "&dir=" + downloadDir;
     $.ajax({
         type: "GET",
@@ -697,7 +936,9 @@ function handleErrors(resultJSON, component){
         triggerConsole();
         $("#console-info").html("").append(code+"<br/>");
     }
-    // @todo add error handling
+    var openComponentTab = $("#open_menu").find(".component_tab.selected");
+    var infoBlock = openComponentTab.find(".componentInfo");
+    infoBlock.html("");
 }
 
 function getErrorArray(jsonResults){
@@ -738,36 +979,13 @@ function getBugMsgs(bugs){
 
 function initializeEditor(){
     var editorDiv = "code_editor";
-    //var lowerHeight = $("#content").outerHeight(true) - $("#user_bar").outerHeight(true) - 
-        //$("#menu_bar").outerHeight(true) - $("#control_bar").outerHeight(true) -
-        //$("#open_menu").outerHeight(true) - $("#footer").outerHeight(true);;
-    /*$("#editor_container").resizable({
-        handles: {e:$("#editor_handle")},
-        maxHeight: 500,
-        maxWidth: 875,
-        alsoResize: "#code_editor,#control_bar",
-        alsoResizeReverse: "#output_container",
-        resize: function(){
-            editor.resize();
-            $( "#output_tabs" ).tabs('resize');
-        },
-        minHeight: 500,
-        minWidth: 275
-    });*/
-    //var editorHeight =  lowerHeight;// - $("#editor_container").outerHeight(true);
-    //$("#editor_container").outerHeight(lowerHeight + $("#control_bar").outerHeight(true));
-    //$("#code_editor").outerHeight(editorHeight);
     setEditorHeight();
     setConsolePosition();
-    //var outputHeight = editorHeight + $("#control_bar").outerHeight(true);
-    //$("#output_container").outerHeight(outputHeight-10);
-    //$("#tabs_output").outerHeight($("#output_container").outerHeight(true)-10 - $("#output_list").outerHeight(true));
-    //$("#tabs_vcs").outerHeight($("#output_container").outerHeight(true)-10 - $("#output_list").outerHeight(true));
     editor = ace.edit(editorDiv);
     editor.setTheme("ace/theme/textmate");
     var ResolveMode = require("ace/mode/resolve").Mode;
     editor.getSession().setMode(new ResolveMode());
-    editor.getSession().setValue("test content");
+    editor.getSession().setValue("");
     editor.renderer.setHScrollBarAlwaysVisible(false);
     document.getElementById(editorDiv).style.fontSize=FONTSIZE+"px";
     
@@ -777,6 +995,7 @@ function initializeEditor(){
     consoleExpander.click(function(event){
         showConsole(this);
     });
+    document.onkeydown = keyHandler;
 }
 
 function setEditorHeight(){
@@ -1009,13 +1228,18 @@ function reformatVCs(vc){
         //var step = decode(vcJSON.step);
         var goal = vc.goal;
         var given = vc.given;
-        vcDiv.html("VC "+vcID+"<br/><br/>");
-        vcDiv.append(step+"<br/><br/>");
-        vcDiv.append("Goal:");
+        vcDiv.attr({id:"VC_"+vcID});
+        var infoSpan = $("<span>").addClass("componentInfo vc_status");
+        vcDiv.html("VC "+vcID+" ");
+        vcDiv.append(infoSpan);
+        var vcDetails = $("<div>");
+        vcDetails.append("<br/>");
+        vcDetails.append(step+"<br/><br/>");
+        vcDetails.append("Goal:");
         goal = goal.substr(goal.indexOf(":")+1);
         var goalDiv = $("<div>").addClass("vcIndent").html("<p>"+goal.replace(/&nbsp;/g, " ")+"</p>");
-        vcDiv.append(goalDiv);
-        vcDiv.append("Given:");
+        vcDetails.append(goalDiv);
+        vcDetails.append("Given:");
         //given = given.substr(given.indexOf(":")+1);
         //var givensDiv = $("<div>").addClass("vcIndent").html("");
         var givensList = $("<ol>");
@@ -1032,7 +1256,8 @@ function reformatVCs(vc){
                 givensList.append(givenItem);
             }
         });
-        vcDiv.append(givensList);
+        vcDetails.append(givensList);
+        vcDetails.appendTo(vcDiv);
         vcsDiv.append(vcDiv);
     }
     else{
@@ -1176,7 +1401,7 @@ function checkResolveKeywords(value){
 function showKeywordTooltip(pos, editor, textRange){
     var selectedWord = editor.session.getTextRange(textRange);
  //   if(jQuery.inArray(selectedWord, keywordsTable.items) >= 0){
-    if(keywordsTable.hasKeyword(selectedWord)){    
+    if(keywordsTable.hasKeyword(selectedWord) && (keywordsTable.getTip(selectedWord) !== "")){    
         var keyword = $("#code_editor").find(".ace_keyword:contains("+selectedWord+")");
             
         var length = selectedWord.length;
@@ -1209,4 +1434,142 @@ function showKeywordTooltip(pos, editor, textRange){
             }
         });
     }
+}
+
+function formatCode(input)
+{
+    var myString = input.replace(/\t/g,"");
+  var newline = new RegExp('\n', 'g');
+  var tabline = new RegExp('\t', 'g');
+  var braceLine = new RegExp("{\n\n", 'g');
+  var count = 0;
+  var loc = 0;
+  var openLoc = new Array();
+  var closeLoc = new Array();
+  while(loc > -1)
+  {
+     loc = myString.indexOf("{", loc+1);
+     if(loc > -1)
+     {
+       openLoc[count] = loc;
+       count++;
+     }
+  }
+  loc=0;
+  count = 0;
+  while(loc > -1)
+  {
+     loc = myString.indexOf("}", loc+1);
+     if(loc > -1)
+     {
+       closeLoc[count] = loc;
+       count++;
+     }
+  }
+  var curopen = 0;
+  var curclose = 0;
+  count = 0;
+  myString = myString.replace("{\n\n", "\n{\n");
+  myString = myString.replace("}\n\n", "\n}\n");
+  var fin = myString.substring(0, openLoc[curopen]);
+  var tempD;
+  var start;
+  var updown;
+  var finish;
+  var tabApp = "";
+  //if(!(closeLoc[4] == undefined)){
+  //document.write("sucess");}
+ while(openLoc[curopen] != undefined || closeLoc[curclose] != undefined){
+     if(openLoc[curopen] != undefined){
+         if(openLoc[curopen] < closeLoc[curclose]){
+             start = openLoc[curopen];
+             if(openLoc[curopen+1] !=undefined && openLoc[curopen+1] < closeLoc[curclose]){
+                 finish = openLoc[curopen+1];
+             }
+             else {
+                 finish = closeLoc[curclose];
+             }
+             count++;
+             curopen++;
+         } else {
+             start = closeLoc[curclose];
+             if(openLoc[curopen] < closeLoc[curclose+1]){
+                 finish = openLoc[curopen];
+             }
+             else{
+                 finish = closeLoc[curclose+1];
+             }
+             count--;
+             curclose++;
+         }
+     }
+     else{
+         start = closeLoc[curclose];
+         if(closeLoc[curclose+1] != undefined){
+             finish = closeLoc[curclose+1];
+         }
+         else{
+             finish = undefined;
+         }
+         curclose++;
+         count--;
+     }
+     if(finish != undefined){
+         tempD = myString.substring(start, finish);
+     } else{
+         tempD = myString.substring(start);
+     }
+     var c = 0;
+    tempD = tempD.replace("{\n\n", "\n{\n");
+    tempD = tempD.replace("}\n\n", "\n}\n");
+    while(c < count){
+        tabApp = tabApp.concat("\t");
+        c++;
+    }
+    tabApp = "\n" + tabApp;
+     tempD = tempD.replace(newline, tabApp);
+    tempD = tempD.replace("\t{", "{");
+    fin = fin.concat(tempD);
+    tempD="";
+    tabApp = "";
+  }
+
+
+  myString = fin;
+  return myString;
+}
+
+function keyHandler(e){
+    var evtobj=window.event? event : e
+    if (evtobj.keyCode == '192') {
+        //showNewUserMsg();
+    }
+    else if(evtobj.keyCode == '8'){
+        var focusedElement = $(":focus")[0];
+        if(typeof focusedElement === "undefined"){
+            var msg = "You are about to navigate away from the RESOLVE Web Interface. " +
+                        "Click OK to continue or Cancel to remain."
+            var ans = confirm(msg);
+            if(!ans){
+                return false;
+            }
+        }
+        else if($(focusedElement).attr("id") == "fileName"){
+            return true;
+        }
+        else{
+            return false;
+        }    
+    }
+    
+    // these handle increasing/decreasing font size with ctrl+ and ctrl-
+    // they have more than one keycode for cross-browser compatibility
+    /*else if((evtobj.keyCode == '187' || evtobj.keyCode == '107'  || evtobj.keyCode == '61') && evtobj.ctrlKey){
+        increaseFontSize();
+        return false;
+    }
+    else if((evtobj.keyCode == '187' || evtobj.keyCode == '107') && evtobj.ctrlKey){
+        decreaseFontSize();
+        return false;
+    }*/
 }

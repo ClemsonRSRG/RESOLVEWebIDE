@@ -10,10 +10,11 @@ POST    /WebCompiler                            WebCompiler.compile
 WS      /Compiler                               CompilerSocket.compile
 POST    /Components                             ComponentManager.add
 PUT     /Components                             ComponentManager.update
-DELETE  /Components                             ComponentManager.del
+POST    /delete                                 ComponentManager.del
 GET     /export                                 ComponentExporter.exportComponents
 POST    /import                                 ComponentImporter.importComponents
 GET     /download                               Downloader.download
+POST    /rename                                 ComponentManager.rename
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

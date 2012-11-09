@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import compiler.JarBuilderInvoker;
 import compiler.JavaTranslatorInvoker;
 import compiler.VCGeneratorInvoker;
+import compiler.VerifyInvoker;
 import edu.clemson.cs.r2jt.ResolveCompiler;
 import edu.clemson.cs.r2jt.data.MetaFile;
 import edu.clemson.cs.r2jt.data.ModuleKind;
@@ -87,6 +88,16 @@ public class CompilerSocket extends WebSocketController {
             VCGeneratorInvoker vcgi = new VCGeneratorInvoker(r, args, outbound);
             vcgi.generateVcs(job);
         }
+        else if(job.compareTo("verify") == 0){
+            //Constructing compiler
+            String[] args = {"-maindir", compilerMainDir, "-vcs", 
+                        "-listVCs", "-quickprove", "-webinterface",
+                        "-timeout", "1000"};
+            r = new ResolveCompiler(args, umf, userFileMap);
+
+            VerifyInvoker vcgi = new VerifyInvoker(r, args, outbound);
+            vcgi.verifyResolve(job);
+        }
         else if(job.compareTo("buildJar") == 0){
             
             // we create a temporary version of the workspace with a hierarchy
@@ -113,6 +124,28 @@ public class CompilerSocket extends WebSocketController {
 
             JarBuilderInvoker jbi = new JarBuilderInvoker(r, args, tempDir, outbound);
             jbi.generateFacilityJar(job, umf);
+        }
+        else if(job.compareTo("prettyJavaTranslate") == 0){
+            String[] args = {"-maindir", compilerMainDir, "-prettyJavaTranslate", 
+                "-webinterface"};
+            r = new ResolveCompiler(args, umf, userFileMap);
+
+            //invoking the translator with the compiler specially created for
+            //translating
+            JavaTranslatorInvoker gji = new JavaTranslatorInvoker(r, args, outbound);
+            //outbound.send(gji.generateJava().toString());
+            gji.generateJava(job);//event);
+        }
+        else if(job.compareTo("prettyCTranslate") == 0){
+            String[] args = {"-maindir", compilerMainDir, "-prettyCTranslate", 
+                "-webinterface"};
+            r = new ResolveCompiler(args, umf, userFileMap);
+
+            //invoking the translator with the compiler specially created for
+            //translating
+            JavaTranslatorInvoker gji = new JavaTranslatorInvoker(r, args, outbound);
+            //outbound.send(gji.generateJava().toString());
+            gji.generateJava(job);//event);
         }
         //System.out.println(decode(uc.content));
         //outbound.send(uc.name);

@@ -58,7 +58,9 @@ public class Projects extends Controller {
             project.openProject = openProject;
             project.standardHidden = standardHidden;
             project.defaultProject = defaultProject;
-            WorkspaceJsonGenerator jsonGen = new WorkspaceJsonGenerator((String)Play.configuration.get("workingdir"));
+            String slash = System.getProperty("file.separator");
+            String workspacesDir = (String)Play.configuration.get("workingdir") + slash + "workspaces" + slash;
+            WorkspaceJsonGenerator jsonGen = new WorkspaceJsonGenerator(workspacesDir);
             String jsonRep = jsonGen.generateJSON(project.name, project.standardHidden);
             if(jsonRep != null){
                 project.jsonRep = jsonRep;

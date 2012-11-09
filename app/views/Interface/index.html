@@ -22,6 +22,7 @@
     <script type="text/javascript" src="@{'/public/javascripts/editor/ace.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/editor/mode-resolve.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/editor/mode-java.js'}"></script>
+    <script type="text/javascript" src="@{'/public/javascripts/editor/mode-c_cpp.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/antlr/antlr3-all-min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/antlr/RParser-min.js'}"></script>
     <script type="text/javascript" src="@{'/public/javascripts/antlr/RLexer-min.js'}"></script>
@@ -103,7 +104,7 @@
 
 #{/set}
     
-    #{menu_bar selectedProject:selectedProject, currentProjects:projects/}
+    #{menu_bar currentProjects:projects/}
     <div  id="open_menu" class="notSelectable">
         <div id="scan_left">&lt;</div>
         <ul></ul>

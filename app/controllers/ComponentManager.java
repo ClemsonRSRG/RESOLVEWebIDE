@@ -46,19 +46,33 @@ public class ComponentManager extends Controller {
         } 
     }
     
-    public static void del(String job, String target){
+    public static void del(String target){
         if(Security.isConnected()) {
             String email = Security.connected();
             User user = User.find("byEmail", email).first();
-            String body = params.get("body");
-            body = StringEscapeUtils.unescapeJava(body);
-            target = body.substring(1, body.length() - 1);
+            //String body = params.get("body");
+            //body = StringEscapeUtils.unescapeJava(body);
+            //target = body.substring(1, body.length() - 1);
             //System.out.println(body);
             //if(job.compareTo("create") == 0){
             UserComponent updatedUc = new Gson().fromJson(target, UserComponent.class);
             UserComponent uc = UserComponent.find("byNameAndPkgAndProjectAndAuthor",
                                     updatedUc.name, updatedUc.pkg, updatedUc.project, user).first();
             uc.delete();
+        } 
+    }
+    
+    public static void rename(String job, String newName, String target){
+        if(Security.isConnected()) {
+            String email = Security.connected();
+            User user = User.find("byEmail", email).first();
+            //System.out.println(body);
+            //if(job.compareTo("create") == 0){
+            UserComponent updatedUc = new Gson().fromJson(target, UserComponent.class);
+            UserComponent uc = UserComponent.find("byNameAndPkgAndProjectAndAuthor",
+                                    updatedUc.name, updatedUc.pkg, updatedUc.project, user).first();
+            uc.name = newName;
+            uc.save();
         } 
     }
 }
