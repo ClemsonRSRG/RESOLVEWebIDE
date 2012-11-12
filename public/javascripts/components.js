@@ -286,6 +286,14 @@ var ComponentNameView = Backbone.View.extend({
         event.stopPropagation();
         var model = this.model
         displayComponent(model);
+        var userEvent = new UserEvent({
+            eventType: "selectComponent",
+            project: selectedProject,
+            name: model.get("name"),
+            pkg: model.get("pkg"),
+            content: model.get("content")
+        });
+        userEvent.save();
         //$(event.currentTarget).trigger("mouseout");
         //$("#component_list").css({display:"none"});
     },
@@ -775,6 +783,15 @@ function displayComponent(component){
      //$("#open_component_dropdown").removeClass("visible").addClass("hidden");
      scanToSelected(item);
      clearConsole();
+     
+    var userEvent = new UserEvent({
+        eventType: "displayComponent",
+        project: selectedProject,
+        name: component.get("name"),
+        pkg: component.get("pkg"),
+        content: component.get("content")
+    });
+    userEvent.save();
      //clearVcInfo();
 }
 

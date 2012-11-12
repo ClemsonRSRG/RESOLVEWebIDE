@@ -70,6 +70,10 @@ CREATE TABLE IF NOT EXISTS `userComponents` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+--
+-- Constraints for table `usercomponents`
+--
+
 -- --------------------------------------------------------
 
 --
@@ -86,23 +90,41 @@ CREATE TABLE IF NOT EXISTS `users` (
   `lastLogin` datetime DEFAULT NULL,
   `createdOn` datetime NOT NULL,
   `currentProject` varchar(256) NOT NULL DEFAULT 'Default_Project',
+  `timeout` int(11) NOT NULL DEFAULT '5',
   `authenticated` tinyint(1) DEFAULT '0',
   `confirmationCode` varchar(256) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11 ;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password`, `firstName`, `lastName`, `userType`, `lastLogin`, `createdOn`, `currentProject`, `authenticated`, `confirmationCode`) VALUES
-(1, 'admin', 'b487d2435afff4811cc1570ab41c208e26d79cc384e6f3dfc3f793092981eeed', 'Admin', 'User', 2, NULL, '2012-02-07 10:30:22', 'Default_Project', 1, ''),
-(2, 'ctcook@g.clemson.edu', 'b487d2435afff4811cc1570ab41c208e26d79cc384e6f3dfc3f793092981eeed', 'Chuck', 'Cook', 2, '2012-09-07 09:34:50', '2012-02-07 10:30:22', 'Default_Project', 1, ''),
-(3, 'yushans@g.clemson.edu', '094f21fe5a6ebd4af4970e4f62d41ad517740001e0d63c41cb95975a7f998f71', 'Yu-Shan', 'Sun', 2, '2012-09-07 13:59:06', '2012-02-17 16:16:54', 'Default_Project', 1, ''),
-(4, 'murali@clemson.edu', 'f4b834944f973c3df63ac358ed9191a02b04afcc2743b508c92e450b0a4d70f7', 'Murali', 'Sitaraman', 1, '2012-09-03 18:27:20', '2012-03-07 13:23:19', 'Default_Project', 1, ''),
-(5, 'ceiseng@g.clemson.edu', '65bc9cd7ec5397c31101207723aa4a6cee7e7f640438ffdf19179ce42d071405', 'Carrie', 'Eisengrein', 1, '2012-04-23 16:45:19', '2012-03-13 00:43:40', 'Default_Project', 1, ''),
-(6, 'hamptos@clemson.edu', 'a3bd2d8ac9354dfba7f23db42e7fb8093de394d8279ecda8084fbc67007a7ef1', 'Hampton', 'Smith', 1, '2012-04-03 03:13:43', '2012-03-26 12:37:50', 'Default_Project', 1, ''),
-(7, 'mrtodd@clemson.edu', 'a075d17f3d453073853f813838c15b8023b8c487038436354fe599c3942e1f95', 'Mark', 'Todd', 1, '2012-09-04 16:07:41', '2012-03-27 10:30:56', 'Default_Project', 1, '');
+INSERT INTO `users` (`id`, `email`, `password`, `firstName`, `lastName`, `userType`, `lastLogin`, `createdOn`, `currentProject`, `timeout`, `authenticated`, `confirmationCode`) VALUES
+(1, 'admin', 'b487d2435afff4811cc1570ab41c208e26d79cc384e6f3dfc3f793092981eeed', 'Admin', 'User', 2, NULL, '2012-02-07 10:30:22', 'Default_Project', 5, 1, ''),
+(2, 'ctcook@g.clemson.edu', 'b487d2435afff4811cc1570ab41c208e26d79cc384e6f3dfc3f793092981eeed', 'Chuck', 'Cook', 2, '2012-09-07 09:34:50', '2012-02-07 10:30:22', 'Default_Project', 5, 1, ''),
+(3, 'yushans@g.clemson.edu', '094f21fe5a6ebd4af4970e4f62d41ad517740001e0d63c41cb95975a7f998f71', 'Yu-Shan', 'Sun', 2, '2012-11-02 16:08:39', '2012-02-17 16:16:54', 'Default_Project', 5, 1, ''),
+(4, 'murali@clemson.edu', 'f4b834944f973c3df63ac358ed9191a02b04afcc2743b508c92e450b0a4d70f7', 'Murali', 'Sitaraman', 1, '2012-09-03 18:27:20', '2012-03-07 13:23:19', 'Default_Project', 5, 1, ''),
+(5, 'ceiseng@g.clemson.edu', '65bc9cd7ec5397c31101207723aa4a6cee7e7f640438ffdf19179ce42d071405', 'Carrie', 'Eisengrein', 1, '2012-04-23 16:45:19', '2012-03-13 00:43:40', 'Default_Project', 5, 1, ''),
+(6, 'hamptos@clemson.edu', 'a3bd2d8ac9354dfba7f23db42e7fb8093de394d8279ecda8084fbc67007a7ef1', 'Hampton', 'Smith', 1, '2012-04-03 03:13:43', '2012-03-26 12:37:50', 'Default_Project', 5, 1, ''),
+(7, 'mrtodd@clemson.edu', 'a075d17f3d453073853f813838c15b8023b8c487038436354fe599c3942e1f95', 'Mark', 'Todd', 1, '2012-09-04 16:07:41', '2012-03-27 10:30:56', 'Default_Project', 5, 1, '');
+
+
+--
+-- Table structure for table `usersEvents`
+--
+
+CREATE TABLE IF NOT EXISTS `userEvents` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `author_id` bigint(20) DEFAULT NULL,
+  `eventType` varchar(256) NOT NULL,
+  `content` longtext DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `pkg` varchar(255) DEFAULT NULL,
+  `project` varchar(255) DEFAULT NULL,
+  `eventDate` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=11 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

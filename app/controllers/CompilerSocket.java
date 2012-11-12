@@ -26,6 +26,7 @@ import models.UserComponent;
 import play.Play;
 import play.db.jpa.GenericModel.JPAQuery;
 import play.mvc.WebSocketController;
+import webui.utils.WebSocketWriter;
 
 /**
  *
@@ -33,6 +34,7 @@ import play.mvc.WebSocketController;
  */
 public class CompilerSocket extends WebSocketController {
     public static void compile(String job, String target, String project) {
+        WebSocketWriter myWsWriter = new WebSocketWriter(outbound);
         String slash = System.getProperty("file.separator");
         String relativeMainDir = "RESOLVE" + slash + "Main" + slash;
         UserComponent uc = new Gson().fromJson(target, UserComponent.class);
@@ -92,8 +94,8 @@ public class CompilerSocket extends WebSocketController {
             //Constructing compiler
             String[] args = {"-maindir", compilerMainDir, "-vcs", 
                         "-listVCs", "-quickprove", "-webinterface",
-                        "-timeout", "1000"};
-            r = new ResolveCompiler(args, umf, userFileMap);
+                        "-timeout", "5000"};
+            r = new ResolveCompiler(args, umf, userFileMap, myWsWriter);
 
             VerifyInvoker vcgi = new VerifyInvoker(r, args, outbound);
             vcgi.verifyResolve(job);

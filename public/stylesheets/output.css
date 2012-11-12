@@ -84,3 +84,7 @@
     padding-left: 5px;
     background-color: white;
 }
+
+.vc_details_hidden {
+    display: none;
+}

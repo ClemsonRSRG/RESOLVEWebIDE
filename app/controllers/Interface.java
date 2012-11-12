@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import models.Project;
 import models.User;
 import models.UserComponent;
+import models.UserEvent;
 import play.cache.Cache;
 
 //import models.*;
@@ -26,23 +27,6 @@ public class Interface extends Controller {
     }
 
     public static void index() {
-        /*String userName = "default";
-        String userSession = session.getId();
-        Boolean loggedIn = Cache.get(userSession + "_status", Boolean.class);
-        User user = null;
-        if(loggedIn != null){
-            user = Cache.get(userSession + "_user", User.class);
-            // --if(loggedIn){
-                // --user = Cache.get(userSession + "_user", User.class);
-                // --Cache.set(userSession + "_user", user);
-            // --}
-        }
-        else{
-            Cache.set(userSession + "_status", false);
-            // @todo set to default user profile
-            user = User.find("byEmail", "ctcook@g.clemson.edu").first();
-            Cache.set(userSession + "_user", user);
-        }*/
         List<Project> projects = Project.getOpenProjects();
         String email = null;
         if(Security.isConnected()) {
@@ -85,9 +69,10 @@ public class Interface extends Controller {
             renderArgs.put("selectedProject", proj);
         }
         String userComponents = null;
+        User currUser = null;
         if(email != null){
             userComponents = "{\"components\":[";
-            User currUser = User.find("byEmail", email).first();
+            currUser = User.find("byEmail", email).first();
             List<UserComponent> components = UserComponent.find("byAuthor_idAndProject", currUser.id, proj.name).fetch();
             Iterator it = components.iterator();
             while(it.hasNext()){
@@ -101,6 +86,8 @@ public class Interface extends Controller {
             //System.out.println(userComponents);
         }
         renderArgs.put("ucs", userComponents);
+        UserEvent event = new UserEvent("getIndex", proj.name, currUser);
+        event.save();
         render();
     }
 

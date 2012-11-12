@@ -13,6 +13,35 @@ var editor = null;
 var FONTSIZE = 12;
 myUserControlView = null;
 
+var UserEvent = Backbone.Model.extend({
+    initialize: function(){
+        this.project = selectedProject;
+        this.eventType = "";
+        this.component = null;
+    },
+    toJSON: function(){
+        //var content = this.get("content");
+        // we need to escape quotes so that we have valid JSON going to the server
+        //content = content.replace(/%22/g, "\\%22");
+        //content = content.replace(/\"/g, "\\\"");
+        var json = "{\"project\":\"" + this.get("project") + "\"," +
+            "\"eventType\":\"" + this.get("eventType") + "\"," +
+            "\"name\":\"" + this.get("name") + "\"," +
+            "\"pkg\":\"" + this.get("pkg") + "\"," +
+            "\"content\":\"" + this.get("content") + "\"}";
+        return json;
+    },
+    url : function() {
+        var loc = window.location;
+        //var pathname = loc.pathname;
+        //pathname = pathname.substring(0,pathname.lastIndexOf("/"));
+        //var url = "http://" + loc.host + (loc.pathname.length>1?loc.pathname+"/":loc.pathname) + "Components";
+        var url = "http://" + getUrl(loc) + "events";
+        return url;
+        //return this.collection.url() + '/Components';
+    }
+});
+
 /* 
  * This will hold all of our keywords information such as the hashmap that
  * holds the keywords with their tool-tip values in it. 
@@ -605,6 +634,14 @@ UserControlView = Backbone.View.extend({
         //var editorSession = this.model.get("editorSession");
         //var code = editorSession.doc.getValue();
         renameUserComponent(this.model);
+        var userEvent = new UserEvent({
+            eventType: "renameComponent",
+            project: selectedProject,
+            name: model.get("name"),
+            pkg: model.get("pkg"),
+            content: model.get("content")
+        });
+        userEvent.save();
     },
     save : function(event){
         var editorSession = this.model.get("editorSession");
@@ -616,12 +653,30 @@ UserControlView = Backbone.View.extend({
         var openComponentTab = $("#open_menu").find(".component_tab.selected");
         var editedIcon = openComponentTab.find("b");
         editedIcon.remove();
+        
+        var userEvent = new UserEvent({
+            eventType: "saveComponent",
+            project: selectedProject,
+            name: model.get("name"),
+            pkg: model.get("pkg"),
+            content: model.get("content")
+        });
+        userEvent.save();
     },
     del : function(event){
         var model = this.model;
         var ans = confirm("Are you sure you want to delete " + model.get("name") + "?");
         if(ans){
             deleteUserComponent(model);
+            
+            var userEvent = new UserEvent({
+                eventType: "deleteComponent",
+                project: selectedProject,
+                name: model.get("name"),
+                pkg: model.get("pkg"),
+                content: model.get("content")
+            });
+            userEvent.save();
         }
     },
     showJava : function(event){
@@ -845,7 +900,7 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
         var resultJSON = JSON.parse(event.data);
         var status = resultJSON.status;
         if(status == "info"){
-            $("#console-info").append(resultJSON.msg+"<br/>");
+            //$("#console-info").append(resultJSON.msg+"<br/>");
         }
         else if(status == "complete"){
             analyzeResults(resultJSON, model, waitGif);
@@ -854,6 +909,8 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
                 vcSpans.each(function(){
                     addWaitGif($(this));
                 })
+                var vcsDetails = $("#console-info").find(".vc_details");
+                vcsDetails.addClass("vc_details_hidden");
                 targetJob = VERIFY;
                 wsCompile(targetJob, targetJSON, waitGif, model);
             }
@@ -873,7 +930,15 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
     ws.onclose = function (event) {
         //console.log(event);
     };
-        
+    
+    var userEvent = new UserEvent({
+        eventType: targetJob,
+        project: selectedProject,
+        name: model.get("name"),
+        pkg: model.get("pkg"),
+        content: model.get("componentModel").get("content")
+    });
+    userEvent.save();    
     //new Socket(new_uri+"?target="+targetJSON);
 }
 
@@ -1067,19 +1132,25 @@ function analyzeVerifyResult(resultJSON){
         var vcID = "VC_" + vcResult.id;
         var result = vcResult.result;
         var vcDiv = $("#" + vcID);
-        var check_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/check.png\" alt=\"Proved in\" />";
-        var x_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/x.png\" alt=\"Skipped after\" />";
+        //var check_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/check.png\" alt=\"Proved in\" />";
+        //var x_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/x.png\" alt=\"Skipped after\" />";
         var pRegExp = /Proved/i;
         var msRegExp = /[0-9]+/;
-        var statusSpan = vcDiv.find(".vcStatus");
+        var statusSpan = vcDiv.find(".vc_status");
         if(pRegExp.test(result)) {
             addProveSuccess(statusSpan);
-            statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
+            statusSpan.attr({
+                title: "Proved after " + msRegExp.exec(result) + " ms"
+            });
+            //statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
             //result_string = check_img + "&nbsp;(" + msRegExp.exec(result) + " ms).";
         }
         else {
             addProveFail(statusSpan);
-            statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
+            statusSpan.attr({
+                title: "Skipped after " + msRegExp.exec(result) + " ms"
+            });
+            //statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
             //result_string = x_img + "&nbsp;(" + msRegExp.exec(result) + " ms).";
         }
     }
@@ -1381,6 +1452,10 @@ function selectVC(lineNum){
     //$( "#output_tabs" ).tabs("select", 2);
     var vcsDiv = $("#console-info");
     var vcDiv = $("#vc_line_"+lineNum);
+    var hiddenVcDetails = vcDiv.find(".vc_details_hidden");
+    if(hiddenVcDetails.length > 0){
+        hiddenVcDetails.removeClass("vc_details_hidden")
+    }
     var openVCs = vcsDiv.find(".vcContainer.selectedVC");
     openVCs.removeClass("selectedVC");
     vcDiv.addClass("selectedVC");
@@ -1409,7 +1484,7 @@ function reformatVCs(vc){
         var infoSpan = $("<span>").addClass("componentInfo vc_status");
         vcDiv.html("VC "+vcID+" ");
         vcDiv.append(infoSpan);
-        var vcDetails = $("<div>");
+        var vcDetails = $("<div>").addClass("vc_details");
         vcDetails.append("<br/>");
         vcDetails.append(step+"<br/><br/>");
         vcDetails.append("Goal:");
