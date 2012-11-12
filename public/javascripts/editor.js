@@ -245,51 +245,67 @@ UserControlView = Backbone.View.extend({
         $(this.el).empty();
         var commands = $("<div>").html("").addClass("controls_commands");
         var zoomControls = $("<div>").addClass("controls_zoom");
-        var translate = $("<button>").html("translate").addClass("translateJava command active shadow");
-        var build = $("<button>").html("build").addClass("buildJar command active shadow");
+        //var translate = $("<button>").html("translate").addClass("translateJava command active shadow");
+        var build = $("<button>").html("Build").addClass("buildJar command active shadow");
         var vcs = $("<button>").html("VCs").addClass("vcs command active shadow");
-        var verify = $("<button>").html("verify").addClass("verify command active shadow");
-        var renderSpan = $("<div>").attr({id:"render-controls"}).addClass(" render command");
+        var verify = $("<button>").html("Verify").addClass("verify command active shadow");
+        var renderSpan = $("<div>").attr({id:"render-controls"}).addClass("render command");
+        var translateRenderbox = $("<input>").attr({type:"checkbox","id":"translateCheckbox","data-type":"translateCheckbox"});
+        var translateRenderSpan = $("<label>").attr({"for":"translateCheckbox"}).html("Translate");
         var javaRenderbox = $("<input>").attr({type:"checkbox","id":"javaCheckbox","data-type":"javaCheckbox"});
         var javaRenderSpan = $("<label>").attr({"for":"javaCheckbox"}).html("Java Rendering");
         var cRenderbox = $("<input>").attr({type:"checkbox","id":"cCheckbox","data-type":"cCheckbox"});
         var cRenderSpan = $("<label>").attr({"for":"cCheckbox"}).html("C Rendering");
-        var showJava = $("<div>").addClass("java");
-        var inputID = "showJava";
-        this._javaCheckbox = $("<input>").attr({type:"checkbox", id: inputID});
-        this._javaCheckbox.appendTo(showJava);
-        var javaLabel = $("<label>").html("Java").attr({"for":inputID});
-        showJava.append(javaLabel);
+        //var showJava = $("<div>").addClass("java");
+        //var inputID = "showJava";
+        //this._javaCheckbox = $("<input>").attr({type:"checkbox", id: inputID});
+        //this._javaCheckbox.appendTo(showJava);
+        //var javaLabel = $("<label>").html("Java").attr({"for":inputID});
+        //showJava.append(javaLabel);
         var plus = $("<button>").addClass("plus zoom shadow active");
         var minus = $("<button>").addClass("minus zoom shadow active");
         var component = this.model.get("componentModel");
         if(component != null){
             if(component.get("type") == "c"){
-                translate.appendTo(commands);
+                //translate.appendTo(commands);
+                translateRenderbox.appendTo(renderSpan);
+                translateRenderSpan.appendTo(renderSpan);
+                //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "r"){
-                translate.appendTo(commands);
+                //translate.appendTo(commands);
                 vcs.appendTo(commands);
                 //verify.appendTo(commands);
+                translateRenderbox.appendTo(renderSpan);
+                translateRenderSpan.appendTo(renderSpan);
+                //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "e"){
-                translate.appendTo(commands);
+                //translate.appendTo(commands);
+                translateRenderbox.appendTo(renderSpan);
+                translateRenderSpan.appendTo(renderSpan);
+                //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "er"){
-                translate.appendTo(commands);
+                //translate.appendTo(commands);
                 vcs.appendTo(commands);
                 verify.appendTo(commands);
+                translateRenderbox.appendTo(renderSpan);
+                translateRenderSpan.appendTo(renderSpan);
+                //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "f"){
                 build.appendTo(commands);
-                translate.appendTo(commands);
+                //translate.appendTo(commands);
                 vcs.appendTo(commands);
                 verify.appendTo(commands);
+                translateRenderbox.appendTo(renderSpan);
+                translateRenderSpan.appendTo(renderSpan);
                 javaRenderbox.appendTo(renderSpan);
                 javaRenderSpan.appendTo(renderSpan);
                 cRenderbox.appendTo(renderSpan);
                 cRenderSpan.appendTo(renderSpan);
-                renderSpan.appendTo(commands);
+                //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "t"){
                 
@@ -334,6 +350,7 @@ UserControlView = Backbone.View.extend({
         });*/
         $(this.el).html(commands);
         $(this.el).append(zoomControls);
+        $(this.el).append(renderSpan);
         $(".plus").qtip({
             content: 'Click here to zoom in',
             show: 'mouseover',
@@ -357,8 +374,9 @@ UserControlView = Backbone.View.extend({
         "click .active.buildJar" : "compile",
         "click .active.vcs" : "compile",
         "click .active.verify" : "verify",
-        "click #javaCheckbox" : "prettyTranslate",
-        "click #cCheckbox" : "prettyTranslate",
+        "click #translateCheckbox" : "translateJava",
+        "click #javaCheckbox" : "translatePrettyJava",
+        "click #cCheckbox" : "translatePrettyC",
         "click .active.rename" : "rename",
         "click .active.save" : "save",
         "click .active.del" : "del",
@@ -420,19 +438,54 @@ UserControlView = Backbone.View.extend({
         var targetJSON = component.toJSON();
         wsCompile(targetJob, targetJSON, waitGif, model);
     },
-    prettyTranslate : function(event){
-        var checkbox = $(event.currentTarget);
+    translate : function(targetJob, model, thisCheckbox, thatCheckbox1, thatCheckbox2){
+        /*var checkbox = $(event.currentTarget);
+        var translateCheckbox = $("#translateCheckbox");
         var javaCheckbox = $("#javaCheckbox");
         var cCheckbox = $("#cCheckbox");
-        var thisCheckbox = (checkbox.attr("id") === javaCheckbox.attr("id"))?javaCheckbox:cCheckbox;
-        var thatCheckbox = (checkbox.attr("id") === javaCheckbox.attr("id"))?cCheckbox:javaCheckbox;
+        var thisCheckbox = translateCheckbox;
+        var thatCheckbox1 = javaCheckbox;
+        var thatCheckbox2 = cCheckbox;*/
         if(thisCheckbox.attr("checked")){
+            var openComponentTab = $("#open_menu").find(".component_tab.selected");
+            var infoBlock = openComponentTab.find(".componentInfo");
+            var waitGif = addWaitGif(infoBlock);
+            thatCheckbox1.attr({"disabled":true});
+            thatCheckbox2.attr({"disabled":true});
+            var component = model.get("componentModel").clone();
+            component.set("content", encode(editor.getSession().getValue()));
+            var targetJSON = component.toJSON();
+            wsCompile(targetJob, targetJSON, waitGif, model);
+        }
+        else{
+            thatCheckbox1.attr({"disabled":false});
+            thatCheckbox2.attr({"disabled":false});
+            var resolveEditorSession = this.model.get("editorSession");
+            var commandButtons = $(".controls_commands").find("button");
+            commandButtons.attr({disable: ""});
+            commandButtons.addClass("active");
+            editor.setSession(resolveEditorSession);
+            editor.setReadOnly(false);
+            editor.setHighlightActiveLine(true);
+        }  
+    },
+    translateJava : function(event){
+        var checkbox = $(event.currentTarget);
+        var translateCheckbox = $("#translateCheckbox");
+        var javaCheckbox = $("#javaCheckbox");
+        var cCheckbox = $("#cCheckbox");
+        var thisCheckbox = translateCheckbox;
+        var thatCheckbox1 = javaCheckbox;
+        var thatCheckbox2 = cCheckbox;
+        var targetJob = TRANSLATE;
+        this.translate(targetJob, this.model, thisCheckbox, thatCheckbox1, thatCheckbox2);
+        /*if(thisCheckbox.attr("checked")){
             var openComponentTab = $("#open_menu").find(".component_tab.selected");
             var infoBlock = openComponentTab.find(".componentInfo");
             var waitGif = addWaitGif(infoBlock);
             //var waitGif = addWaitGif(thisCheckbox.next());
             //doPrettyJavaTranslate(selectedFile, checkbox, waitGif, targetContent);
-            thatCheckbox.attr({"disabled":true});
+            thatCheckbox1.attr({"disabled":true});
             var model = this.model;
             var component = model.get("componentModel").clone();
             component.set("content", encode(editor.getSession().getValue()));
@@ -441,13 +494,16 @@ UserControlView = Backbone.View.extend({
             if(checkbox.attr("id") === javaCheckbox.attr("id")){
                 targetJob = PRETTYJAVA;
             }
-            else{
+            else if(checkbox.attr("id") === cCheckbox.attr("id")){
                 targetJob = PRETTYC;
+            }
+            else{
+                targetJob = TRANSLATE;
             }
             wsCompile(targetJob, targetJSON, waitGif, model);
         }
         else{
-            thatCheckbox.attr({"disabled":false});
+            thatCheckbox1.attr({"disabled":false});
             var resolveEditorSession = this.model.get("editorSession");
             var commandButtons = $(".controls_commands").find("button");
             commandButtons.attr({disable: ""});
@@ -455,18 +511,95 @@ UserControlView = Backbone.View.extend({
             editor.setSession(resolveEditorSession);
             editor.setReadOnly(false);
             editor.setHighlightActiveLine(true);
-            //checkbox.attr("checked","");
-            /*selectedFile.editor.setSession(selectedFile.editorSession);
-            selectedFile.editor.setReadOnly(false);
-            $(selectedFile.editor.renderer.content).removeClass("javaRenderer");
-            selectedFile.editor.setHighlightActiveLine(true);
-            if(selectedFile.vcArray != null){
-                //var tempSession = selectedFile.editorSession;
-                //selectedFile.editorSession = selectedFile.javaEditorSession;
-                addVcs(selectedFile, selectedFile.vcArray);
-                //selectedFile.editorSession = tempSession;
-            }*/
-        }  
+        }*/  
+    },
+    translatePrettyJava : function(event){
+        var checkbox = $(event.currentTarget);
+        var translateCheckbox = $("#translateCheckbox");
+        var javaCheckbox = $("#javaCheckbox");
+        var cCheckbox = $("#cCheckbox");
+        var thisCheckbox = javaCheckbox;
+        var thatCheckbox1 = translateCheckbox;
+        var thatCheckbox2 = cCheckbox;
+        var targetJob = PRETTYJAVA;
+        this.translate(targetJob, this.model, thisCheckbox, thatCheckbox1, thatCheckbox2);
+        /*if(thisCheckbox.attr("checked")){
+            var openComponentTab = $("#open_menu").find(".component_tab.selected");
+            var infoBlock = openComponentTab.find(".componentInfo");
+            var waitGif = addWaitGif(infoBlock);
+            //var waitGif = addWaitGif(thisCheckbox.next());
+            //doPrettyJavaTranslate(selectedFile, checkbox, waitGif, targetContent);
+            thatCheckbox1.attr({"disabled":true});
+            var model = this.model;
+            var component = model.get("componentModel").clone();
+            component.set("content", encode(editor.getSession().getValue()));
+            var targetJSON = component.toJSON();
+            var targetJob = "";
+            if(checkbox.attr("id") === javaCheckbox.attr("id")){
+                targetJob = PRETTYJAVA;
+            }
+            else if(checkbox.attr("id") === cCheckbox.attr("id")){
+                targetJob = PRETTYC;
+            }
+            else{
+                targetJob = TRANSLATE;
+            }
+            wsCompile(targetJob, targetJSON, waitGif, model);
+        }
+        else{
+            thatCheckbox1.attr({"disabled":false});
+            var resolveEditorSession = this.model.get("editorSession");
+            var commandButtons = $(".controls_commands").find("button");
+            commandButtons.attr({disable: ""});
+            commandButtons.addClass("active");
+            editor.setSession(resolveEditorSession);
+            editor.setReadOnly(false);
+            editor.setHighlightActiveLine(true);
+        }*/
+    },
+    translatePrettyC : function(event){
+        var checkbox = $(event.currentTarget);
+        var translateCheckbox = $("#translateCheckbox");
+        var javaCheckbox = $("#javaCheckbox");
+        var cCheckbox = $("#cCheckbox");
+        var thisCheckbox = cCheckbox;
+        var thatCheckbox1 = javaCheckbox;
+        var thatCheckbox2 = translateCheckbox;
+        var targetJob = PRETTYC;
+        this.translate(targetJob, this.model, thisCheckbox, thatCheckbox1, thatCheckbox2);
+        /*if(thisCheckbox.attr("checked")){
+            var openComponentTab = $("#open_menu").find(".component_tab.selected");
+            var infoBlock = openComponentTab.find(".componentInfo");
+            var waitGif = addWaitGif(infoBlock);
+            //var waitGif = addWaitGif(thisCheckbox.next());
+            //doPrettyJavaTranslate(selectedFile, checkbox, waitGif, targetContent);
+            thatCheckbox1.attr({"disabled":true});
+            var model = this.model;
+            var component = model.get("componentModel").clone();
+            component.set("content", encode(editor.getSession().getValue()));
+            var targetJSON = component.toJSON();
+            var targetJob = "";
+            if(checkbox.attr("id") === javaCheckbox.attr("id")){
+                targetJob = PRETTYJAVA;
+            }
+            else if(checkbox.attr("id") === cCheckbox.attr("id")){
+                targetJob = PRETTYC;
+            }
+            else{
+                targetJob = TRANSLATE;
+            }
+            wsCompile(targetJob, targetJSON, waitGif, model);
+        }
+        else{
+            thatCheckbox1.attr({"disabled":false});
+            var resolveEditorSession = this.model.get("editorSession");
+            var commandButtons = $(".controls_commands").find("button");
+            commandButtons.attr({disable: ""});
+            commandButtons.addClass("active");
+            editor.setSession(resolveEditorSession);
+            editor.setReadOnly(false);
+            editor.setHighlightActiveLine(true);
+        }*/  
     },
     rename : function(event){
         //var editorSession = this.model.get("editorSession");
@@ -730,6 +863,9 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
                 infoBlock.html("");
             }  
         }
+        else if(status == "processing"){
+            analyzeVerifyResult(resultJSON);
+        }
         else if(status == "error"){
             handleErrors(resultJSON, model);
         }
@@ -756,7 +892,7 @@ function getUrl(loc){
 }
 
 function analyzeResults(resultJSON, component, waitGif){
-    if(resultJSON.job == TRANSLATE){
+    /*if(resultJSON.job == TRANSLATE){
         var EditSession = require("ace/edit_session").EditSession;
         var javaCode = resultJSON.result;
         var javaSession = new EditSession(formatCode(decode(javaCode)));
@@ -772,8 +908,8 @@ function analyzeResults(resultJSON, component, waitGif){
         commandButtons.removeClass("active");
         
         $("#console-info").append("complete<br/>");
-    }
-    else if(resultJSON.job == VCS){
+    }*/
+    if(resultJSON.job == VCS){
         var vcArray = new Array();
         //var result = decode(resultJSON.result);
         var result = decode(resultJSON.result);
@@ -867,6 +1003,23 @@ function analyzeResults(resultJSON, component, waitGif){
     else if(resultJSON.job == VERIFY){
         
     }
+    else if(resultJSON.job == TRANSLATE){
+        var EditSession = require("ace/edit_session").EditSession;
+        var javaCode = resultJSON.result;
+        var javaSession = new EditSession(formatCode(decode(javaCode)));
+        var JavaMode = require("ace/mode/java").Mode;
+        component.set("java", javaSession);
+        editor.setReadOnly(true);
+        editor.setSession(javaSession);
+        editor.getSession().setMode(new JavaMode());
+        //myUserControlView.render();
+        //myUserControlView._javaCheckbox.attr({checked: "checked"});
+        var commandButtons = $(".controls_commands").find("button");
+        commandButtons.attr({disable: "diabled"});
+        commandButtons.removeClass("active");
+        
+        $("#console-info").append("complete<br/>");
+    }
     else if(resultJSON.job == PRETTYJAVA){
         EditSession = require("ace/edit_session").EditSession;
         javaCode = resultJSON.result;
@@ -906,6 +1059,30 @@ function analyzeResults(resultJSON, component, waitGif){
         }
     }
     //waitGif.remove();
+}
+
+function analyzeVerifyResult(resultJSON){
+    if(resultJSON.job == VERIFY){
+        var vcResult = resultJSON.result;
+        var vcID = "VC_" + vcResult.id;
+        var result = vcResult.result;
+        var vcDiv = $("#" + vcID);
+        var check_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/check.png\" alt=\"Proved in\" />";
+        var x_img = "&nbsp;&nbsp;&nbsp;<img class=\"verify_imgs\" src=\"images/x.png\" alt=\"Skipped after\" />";
+        var pRegExp = /Proved/i;
+        var msRegExp = /[0-9]+/;
+        var statusSpan = vcDiv.find(".vcStatus");
+        if(pRegExp.test(result)) {
+            addProveSuccess(statusSpan);
+            statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
+            //result_string = check_img + "&nbsp;(" + msRegExp.exec(result) + " ms).";
+        }
+        else {
+            addProveFail(statusSpan);
+            statusSpan.append("&nbsp;(" + msRegExp.exec(result) + " ms).");
+            //result_string = x_img + "&nbsp;(" + msRegExp.exec(result) + " ms).";
+        }
+    }
 }
 
 function cancelJarDownload(facName, downloadDir, d){

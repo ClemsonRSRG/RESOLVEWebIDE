@@ -142,6 +142,9 @@ var ComponentList = Backbone.Collection.extend({
     },
     url : function() {
          //return $(this.document).url() + '/Components';
+    },
+    comparator : function(model) {
+        return model.get("name");
     }
 });
 
@@ -577,13 +580,13 @@ function openComponentScan(direction, view){
         
     if(direction == "left"){
         if(menuLeft > listLeft + menuLeft + 10){
-            list.animate({"left": listLeft + 15}, "fast");
+            list.animate({"left": listLeft + 100}, "fast");
             //myOpenComponent_view.scanLeft();
         }
     }
     else if(direction == "right"){
         if(menuRightSide + 10 < listRightSide){
-            list.animate({"left": listLeft - 15}, "fast");
+            list.animate({"left": listLeft - 100}, "fast");
             //myOpenComponent_view.scanRight();
         }
     }
@@ -796,6 +799,10 @@ function clearVcInfo(){
 function initializeComponents(json, selectedProjectName){
     selectedProject = selectedProjectName;
     myComponentList = new ComponentList(json["components"]);
+    /*myComponentList.comparator = function(model) {
+        return model.get("name");
+    };
+    myComponentList.sort();*/
     myConceptList = new ComponentList();
     myFacilityList = new ComponentList();
     myTheoryList = new ComponentList();
@@ -1805,7 +1812,8 @@ function setFinderWidth(newElement){
     _(listSiblings).each(function(child){
         newFinderWidth += $(child).outerWidth();
     });
-    finder.outerWidth(newFinderWidth);
+    var zoom = DetectZoom.zoom();
+    finder.outerWidth(newFinderWidth * zoom);
     if(newFinderWidth > parentWidth){
         finder.parent().animate({scrollLeft: (newFinderWidth - parentWidth)}, 'fast');
     }
@@ -2040,6 +2048,10 @@ function getNewModelParent(currentList, list){
         //model = getModelParent()
     }
     return model;
+}
+
+function sortComponents(collection){
+    
 }
 
 /*

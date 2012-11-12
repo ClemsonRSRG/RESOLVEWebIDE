@@ -61,7 +61,7 @@
     width: 920px;
     height: 31px;
     float: left;
-    overflow-x: hidden;
+    overflow: hidden;
     position: relative;
     position: absolute;
     left: 30px;
@@ -78,11 +78,10 @@
 
 #open_component_list li {
     width: 175px;
-    float: left;
     padding: 0 0px 0 5px;
     margin: 4px .2em 1px 0;
     top: -1px;
-    display: block;
+    display: inline-block;
     text-decoration: none;
     border: 1px solid #AAA;
     position: relative;
@@ -95,9 +94,9 @@
     background: -moz-linear-gradient(top,  #ffffff,  #cccccc);
 }
 
-#open_component_list a {
+#open_component_list li a {
     width: 125px;
-    display: inline-block;
+    float: left;
     overflow: hidden;
 }
 

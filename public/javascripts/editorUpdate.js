@@ -182,6 +182,20 @@ function addWaitGif(div){
     return waitGif;
 }
 
+function addProveSuccess(div){
+    var imageDiv = $("<div>");
+    imageDiv.addClass("proveSuccess");
+    div.html(imageDiv);
+    return imageDiv;
+}
+
+function addProveFail(div){
+    var imageDiv = $("<div>");
+    imageDiv.addClass("proveFail");
+    div.html(imageDiv);
+    return imageDiv;
+}
+
 function addQtip(el, tip, type){
     var tipClass;
     if(type == "vc"){
