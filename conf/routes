@@ -16,6 +16,8 @@ POST    /import                                 ComponentImporter.importComponen
 GET     /download                               Downloader.download
 POST    /rename                                 ComponentManager.rename
 POST    /events                                 EventLogger.logEvent
+GET     /confirm                                Confirmation.index
+GET     /reset                                  PasswordRecovery.processRequest
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

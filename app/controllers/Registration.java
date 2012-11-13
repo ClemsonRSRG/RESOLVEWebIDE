@@ -1,6 +1,8 @@
 package controllers;
 
 import models.*;
+import play.cache.*;
+import play.libs.*;
 import play.mvc.Controller;
 import play.data.validation.*;
 import java.security.MessageDigest;
@@ -11,12 +13,14 @@ import java.util.logging.Logger;
 public class Registration extends Controller {
     
     public static void index() {
-        render();
+        // Render an ID
+        String randomID = Codec.UUID();
+        render(randomID);
     }
     
     public static void handleSubmit(String email, String emailConfirm,
             String password, String passwordConfirm,
-            String firstName, String lastName) {
+            String firstName, String lastName, String code, String randomID) {
         
         // Validation Rules for User Email
         validation.required(email);
@@ -37,40 +41,46 @@ public class Registration extends Controller {
         // Validation Rules for Name
         validation.required(firstName);
         validation.required(lastName);
+        
+        // Validation Rules for Captcha
+        validation.equals(code, Cache.get(randomID)).message(
+                "Invalid code. Please type it again");
                 
         // Handle Errors
         if (validation.hasErrors()) {
-            render("@index");
+            render("Registration/index.html", randomID);
         }
         
         // Add new user to the database
-        String hashPass = passWordHash(password);
+        String hashPass = User.passWordHash(password);
         User user = new User(email, hashPass, firstName, lastName);
         user.create();
         
         // Render Success Page
-        render(email, firstName, lastName);
+        render();
         
         // Clear the parms field
-        params.flash();
+        email = "";
+        emailConfirm = "";
+        password = "";
+        passwordConfirm = "";
+        firstName = "";
+        lastName = "";
+        hashPass = "";
+        
+        // Delete Stored Captcha
+        Cache.delete(randomID);
     }
     
-    // SHA-256 password hashing (Copy from User.java)
-    private static String passWordHash(String passWord){
-        StringBuilder sb = new StringBuilder();
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(passWord.getBytes());
-
-            byte byteData[] = md.digest();
-
-            //convert the byte to hex format method 1
-            for (int i = 0; i < byteData.length; i++) {
-                sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-            }
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return sb.toString();
+    public static void captcha(String id) {
+        // Image class used to generate the captcha
+        Images.Captcha captcha = Images.captcha(160, 50);
+        
+        // Generate a code and stored in the Cache
+        String code = captcha.getText("#990000", 5);
+        Cache.set(id, code, "10mn");
+        captcha.setBackground("#996633", "#FF9900");
+        
+        renderBinary(captcha);
     }
 }

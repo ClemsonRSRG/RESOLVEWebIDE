@@ -637,9 +637,9 @@ UserControlView = Backbone.View.extend({
         var userEvent = new UserEvent({
             eventType: "renameComponent",
             project: selectedProject,
-            name: model.get("name"),
-            pkg: model.get("pkg"),
-            content: model.get("content")
+            name: this.model.get("name"),
+            pkg: this.model.get("pkg"),
+            content: this.model.get("content")
         });
         userEvent.save();
     },

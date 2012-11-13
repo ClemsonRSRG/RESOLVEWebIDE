@@ -1,6 +1,8 @@
 #{extends 'main.html' /}
 
-<h1>Registration</h1>
+<div class="title">
+    <h1>Registration</h1>
+</div>
 
 #{ifErrors}
 <div class="error">
@@ -10,6 +12,13 @@
 
 #{set 'localStyles'}
     <style>
+        #content {
+            margin: auto;
+        }
+        .title{
+            width: 90%;
+            margin: 0 auto;
+        }
         fieldset {
             width: 500px;
             margin: auto;
@@ -34,6 +43,15 @@
             margin-left: auto;
             margin-right: auto;
         }
+        .rectangle {
+            width: 160px;
+            height: 50px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .text {
+            font-size: 80%;
+        }
     </style>
 #{/set}
 
@@ -55,7 +73,7 @@
     </fieldset>
 
     <fieldset>              
-        <legend>User informations</legend>  
+        <legend>User Information</legend>  
         
         <div class="field">     
             <label for="firstName">First name : </label>                    
@@ -75,17 +93,39 @@
         
         <div class="field">     
             <label for="password">Password : </label>                   
-            <input id="password" type="password" name="password" value="${params.password}" class="#{errorClass 'password' /}" /> 
+            <input id="password" type="password" name="password" value="" class="#{errorClass 'password' /}" /> 
             <span class="error">#{error 'password' /}</span>
         </div>              
         
         <div class="field">     
             <label for="passwordConfirm">Confirm password : </label>                    
-            <input id="passwordConfirm" type="password" name="passwordConfirm" value="${params.passwordConfirm}" class="#{errorClass 'passwordConfirm' /}" /> 
+            <input id="passwordConfirm" type="password" name="passwordConfirm" value="" class="#{errorClass 'passwordConfirm' /}" /> 
             <span class="error">#{error 'passwordConfirm' /}</span>
-        </div>  
-    </fieldset>                         
-    
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Captcha</legend>
+        
+        <div class="field">
+            <label for="code">Please type the code below: </label><br>
+            
+            <span class="text">
+                (Reload the page for a new captcha image)
+            </span>       
+            
+            <div class="rectangle">
+                <img src="@{Registration.captcha(randomID)}" align="center"/>
+            </div>
+            
+            <input type="text" name="code" id="code" size="18" value="" class="#{errorClass 'code' /}"/>
+            <input type="hidden" name="randomID" value="${randomID}" />
+            <span class="error">#{error 'code' /}</span>
+        </div>
+    </fieldset>
+
+    <br>
+
     <div class="buttons">
         <input type="submit" class="submit" value="Create New User" />
         #{a @Interface.index()}Cancel#{/a}

@@ -39,6 +39,10 @@ public class Project extends Model {
         return find("byOwnerEmailAndOpenProject", email, false).fetch();
     }
     
+    public static List<Project> getPrivateProjects(){
+        return find("byOwnerEmailIsNullAndOpenProject", false).fetch();
+    }
+    
     public static Project getDefault(){
         return find("byDefaultProject", true).first();
     }

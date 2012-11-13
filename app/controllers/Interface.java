@@ -32,6 +32,7 @@ public class Interface extends Controller {
         if(Security.isConnected()) {
             email = Security.connected();
             projects.addAll(Project.getUserProjects(email));
+            projects.addAll(Project.getPrivateProjects());
         }
         Project proj = null;
         renderArgs.put("projects", projects);

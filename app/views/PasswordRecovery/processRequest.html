@@ -1,0 +1,76 @@
+#{extends 'main.html' /}
+
+<div class="title">
+    <h1>RESOLVE Web Interface Password Reset</h1>
+</div>
+
+#{ifErrors}
+<div class="error">
+    <h2>Please correct the errors</h2>
+</div>
+#{/ifErrors}
+
+#{set 'localStyles'}
+    <style>
+        #content {
+            margin: auto;
+        }
+        .title{
+            width: 90%;
+            margin: 0 auto;
+        }
+        fieldset {
+            width: 500px;
+            margin: auto;
+        }
+        .field {
+            clear: both;
+            margin-bottom: 2px;
+        }
+        .infos {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .error {
+            color: #c00;
+            text-align: center;
+        }
+        .hasError {
+            background: pink;
+        }
+        .buttons {
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+#{/set}
+
+#{form @PasswordRecovery.success()}
+    <input type="hidden" name="email" value="${email}" />
+
+    <fieldset>              
+        <legend>Password</legend>               
+        
+        <div class="field">     
+            <label for="password">Password : </label>                   
+            <input id="password" type="password" name="password" value="" class="#{errorClass 'password' /}" /> 
+            <span class="error">#{error 'password' /}</span>
+        </div>    
+        
+        <div class="field">     
+            <label for="passwordConfirm">Confirm password : </label>                    
+            <input id="passwordConfirm" type="password" name="passwordConfirm" value="" class="#{errorClass 'passwordConfirm' /}" /> 
+            <span class="error">#{error 'passwordConfirm' /}</span>
+        </div>
+    </fieldset>
+
+    <br>
+
+    <div class="buttons">
+        <input type="submit" class="submit" value="Submit" />
+        #{a @Interface.index()}Cancel#{/a}
+    </div>
+
+    <br>
+#{/form}

@@ -3,14 +3,14 @@
         Welcome 
         #{if _currentUser != null}
             <!--<button id="control_logout">Logout</button>-->
-            ${_currentUser.firstName}.
+            <b>${_currentUser.firstName}</b>.
         #{/if}
         #{else}
-            User.
+            <b>User</b>.
         #{/else} 
         #{if _selectedProject != null}
             <!--<button id="control_logout">Logout</button>-->
-            Current project: ${_selectedProject.name}
+            Current project: <b>${_selectedProject.name}</b>
         #{/if}
         
     </span>
@@ -21,8 +21,6 @@
             <script type="text/javascript">
                 document.getElementById("logout-link").onclick = function() {logout("@{Secure.logout()}"); return false}
             </script>
-            <button id="control_import">Import</button>
-            <button id="control_export">Export</button>
         #{/if}
         #{else}
             <a href="@{Registration.index()}">Register</a>
@@ -31,6 +29,10 @@
         #{if request.controller == 'Projects'}
         <a href="@{Interface.index()}">Home</a>
         #{/if}
+        <a id="help-link" href="javascript:void(0)" onclick="">Help</a>
+        <script type="text/javascript">
+            document.getElementById("help-link").onclick = function() {genHelp(); return false}
+        </script>
         <!--<button id="control_settings">Settings</button>-->
     </div>
     <!--<div id="help_container" class="menu pane_right"></div>

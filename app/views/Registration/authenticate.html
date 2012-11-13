@@ -13,12 +13,11 @@
 #{/set}
 
 <div class="information">
-    <h1>RESOLVE Web Interface User Registration</h1>
+    <h1>Account not authenticated</h1>
 
-    <p>Thank you for registering for the RESOLVE Web Interface.</p>
-
-    <p>An email has been sent to email address you provided with a confirmation link. 
-       Please click the link or copy and paste it into your browser address bar to complete registration.</p>
+    <p> Your account has not yet been verified. </p>
+    <p> Please check your email for the verification link (make sure to check the spam folder). 
+        If you haven't received the email, please click this #{a @Confirmation.resendConfirmation(email)}Link#{/a} to resend the email. </p>
 
     #{a @Interface.index()}Back to RESOLVE Web IDE#{/a}
     

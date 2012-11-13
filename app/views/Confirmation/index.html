@@ -13,12 +13,17 @@
 #{/set}
 
 <div class="information">
-    <h1>RESOLVE Web Interface User Registration</h1>
+    <h1>New user created successfully!</h1>
 
-    <p>Thank you for registering for the RESOLVE Web Interface.</p>
-
-    <p>An email has been sent to email address you provided with a confirmation link. 
-       Please click the link or copy and paste it into your browser address bar to complete registration.</p>
+    <p>
+        <strong>Login Username</strong>: ${email}
+    </p>
+    <p>
+        <strong>First name</strong>: ${firstName}
+    </p>
+    <p>
+        <strong>Last name</strong>: ${lastName}
+    </p>
 
     #{a @Interface.index()}Back to RESOLVE Web IDE#{/a}
     

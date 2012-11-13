@@ -1,6 +1,6 @@
 <div id="menu_bar">
     <div id="project_menu">
-        <button id="project-selector">Projects</button>
+        <button id="project-selector" class="menu_button">Projects</button>
         <ul id="project_list">
             #{list items:_currentProjects, as:'project' }
                 <li class="project hidden">
@@ -13,7 +13,12 @@
         </ul>
     </div>
     <div id="component_menu">
-        <button id="component-selector">Components</button>
+        <button id="component-selector" class="menu_button">Components</button>
+        #{if _currentUser != null}
+            
+            <button id="control_import" class="menu_button">Import</button>
+            <button id="control_export" class="menu_button">Export</button>
+        #{/if}
     </div>
     <!--<div id="help_container" class="menu pane_right"></div>
     <div id="env_menu" class="menu pane_right"></div>-->
