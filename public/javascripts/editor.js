@@ -365,18 +365,8 @@ UserControlView = Backbone.View.extend({
         else{
             commands.append("Please select a component");
         }
-        
-        if(this.model.get("java") != null){
-            showJava.appendTo(zoomControls);
-        }
         plus.appendTo(zoomControls);
         minus.appendTo(zoomControls);
-        /*plus.click(function(event){
-            this.increaseFontSize();
-        });
-        minus.click(function(event){
-            this.decreaseFontSize();
-        });*/
         $(this.el).html(commands);
         $(this.el).append(zoomControls);
         $(this.el).append(renderSpan);
