@@ -7,6 +7,7 @@ import java.util.List;
 import models.Project;
 import models.User;
 import models.UserComponent;
+import models.UserEvent;
 import org.apache.commons.lang.StringEscapeUtils;
 import play.mvc.Controller;
 import play.mvc.With;
@@ -27,6 +28,9 @@ public class ComponentExporter extends Controller {
                 if(it.hasNext()){
                     userComponents += ",";
                 }
+                UserEvent event = new UserEvent(uc.name, uc.pkg, uc.project,
+                            "exportComponent", uc.content, uc.author);
+                event.save();
             }
             userComponents += "]}";
             InputStream is = new ByteArrayInputStream(userComponents.getBytes());

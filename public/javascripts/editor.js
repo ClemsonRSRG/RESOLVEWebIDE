@@ -624,14 +624,14 @@ UserControlView = Backbone.View.extend({
         //var editorSession = this.model.get("editorSession");
         //var code = editorSession.doc.getValue();
         renameUserComponent(this.model);
-        var userEvent = new UserEvent({
+        /*var userEvent = new UserEvent({
             eventType: "renameComponent",
             project: selectedProject,
             name: this.model.get("name"),
             pkg: this.model.get("pkg"),
             content: this.model.get("content")
         });
-        userEvent.save();
+        userEvent.save();*/
     },
     save : function(event){
         var editorSession = this.model.get("editorSession");
@@ -644,14 +644,14 @@ UserControlView = Backbone.View.extend({
         var editedIcon = openComponentTab.find("b");
         editedIcon.remove();
         
-        var userEvent = new UserEvent({
+        /*var userEvent = new UserEvent({
             eventType: "saveComponent",
             project: selectedProject,
             name: model.get("name"),
             pkg: model.get("pkg"),
             content: model.get("content")
         });
-        userEvent.save();
+        userEvent.save();*/
     },
     del : function(event){
         var model = this.model;
@@ -659,14 +659,14 @@ UserControlView = Backbone.View.extend({
         if(ans){
             deleteUserComponent(model);
             
-            var userEvent = new UserEvent({
+            /*var userEvent = new UserEvent({
                 eventType: "deleteComponent",
                 project: selectedProject,
                 name: model.get("name"),
                 pkg: model.get("pkg"),
                 content: model.get("content")
             });
-            userEvent.save();
+            userEvent.save();*/
         }
     },
     showJava : function(event){

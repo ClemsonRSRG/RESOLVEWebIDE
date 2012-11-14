@@ -21,13 +21,13 @@ public class UserEvent extends Model {
     public User author;
     
     public UserEvent(String name, String pkg, String project, String eventType,
-                        String content, Date eventDate, User author){
-        //this.name = name;
-        //this.pkg = pkg;
-        //this.project = project;
+                        String content, User author){
+        this.name = name;
+        this.pkg = pkg;
+        this.project = project;
         this.eventType = eventType;
-        //this.content = content;
-        this.eventDate = eventDate;
+        this.content = content;
+        this.eventDate = new Date();
         this.author = author;
     }
     

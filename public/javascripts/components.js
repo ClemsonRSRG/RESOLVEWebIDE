@@ -852,7 +852,7 @@ function initializeComponentMenu(){
 
     //myComponent_view = new ComponentMenuView({el: $("#component_list"), collection: myComponentList});
     //$("#component_list").parent().trigger('mouseenter');
-    $("#component_menu").bind("click", function(){
+    $("#component-selector").bind("click", function(){
         var componentDialog = $("#component-finder").dialog({
             width:700,
             height:350,
@@ -1798,14 +1798,14 @@ function genNewTheoryForm(parent){
 }
 
 function saveSuccess(newComponent, id, d){
-    var userEvent = new UserEvent({
+    /*var userEvent = new UserEvent({
         eventType: "createComponent",
         project: selectedProject,
         name: newComponent.get("name"),
         pkg: newComponent.get("pkg"),
         content: newComponent.get("content")
     });
-    userEvent.save();
+    userEvent.save();*/
     newComponent.set("id", id);
     displayComponent(newComponent);
     d.dialog("destroy");

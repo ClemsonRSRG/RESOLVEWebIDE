@@ -8,6 +8,7 @@ import java.util.List;
 import models.ComponentImport;
 import models.User;
 import models.UserComponent;
+import models.UserEvent;
 import org.apache.commons.lang.StringEscapeUtils;
 import play.mvc.Controller;
 import projectGeneration.WorkspaceJsonGenerator;
@@ -31,6 +32,8 @@ public class ComponentImporter extends Controller {
                 uc.author = user;
                 uc.content = WorkspaceJsonGenerator.decode(uc.content);
                 uc.setCreatedDate();
+                
+
                 UserComponent existingUc = UserComponent.find("byNameAndPkgAndProjectAndAuthor",
                                         uc.name, uc.pkg, uc.project, user).first();
                 if(existingUc != null){
@@ -42,6 +45,9 @@ public class ComponentImporter extends Controller {
                     output.append("\",\"success\":\"");
                     output.append(deleted);
                     output.append("\"},");
+                    UserEvent event = new UserEvent(deletedUc.name, deletedUc.pkg, deletedUc.project,
+                            "importDeleteComponent", deletedUc.content, deletedUc.author);
+                    event.save();
                 }
                 boolean created = uc.create();
                 output.append("{\"action\":\"Adding\",");
@@ -54,6 +60,9 @@ public class ComponentImporter extends Controller {
                 if(it.hasNext()){
                     output.append(",");
                 }
+                UserEvent event = new UserEvent(uc.name, uc.pkg, uc.project,
+                            "importComponent", uc.content, uc.author);
+                event.save();
             }
             output.append("]}");
             renderJSON(output);
