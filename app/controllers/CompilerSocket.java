@@ -25,19 +25,35 @@ import models.User;
 import models.UserComponent;
 import play.Play;
 import play.db.jpa.GenericModel.JPAQuery;
+import play.mvc.Http.WebSocketEvent;
 import play.mvc.WebSocketController;
 import webui.utils.WebSocketWriter;
+import play.mvc.Http.WebSocketFrame;
 
 /**
  *
  * @author Chuck
  */
 public class CompilerSocket extends WebSocketController {
-    public static void compile(String job, String target, String project) {
+    public static void compile(String job, String project/*, String target, String project*/) {
+        String target = "";
+        while(inbound.isOpen()){
+            WebSocketEvent e = await(inbound.nextEvent());
+            target = ((WebSocketFrame)e).textData;
+            if(!target.equals("")){
+                break;
+            }
+            //for(String quit: TextFrame.and(Equals("complete")).match(e)) {
+                //outbound.send("Bye!");
+                //disconnect();
+            //}
+        }
+        UserComponent uc = new Gson().fromJson(target, UserComponent.class);
         WebSocketWriter myWsWriter = new WebSocketWriter(outbound);
         String slash = System.getProperty("file.separator");
         String relativeMainDir = "RESOLVE" + slash + "Main" + slash;
-        UserComponent uc = new Gson().fromJson(target, UserComponent.class);
+        uc.content = decode(uc.content);
+        //UserComponent uc = new Gson().fromJson(target, UserComponent.class);
         String workingDir = (String)Play.configuration.get("workingdir");
         String compilerMainDir = workingDir + "workspaces" + slash + uc.project + slash + relativeMainDir;
         ResolveCompiler r = null;

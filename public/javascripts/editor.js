@@ -876,7 +876,8 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
         targetJob = VCS;
     }
     var url = "ws://" + getUrl(loc) + "Compiler";
-    var params = "?job=" + targetJob + "&target=" + targetJSON + "&project=" + selectedProject;
+    //var params = "?job=" + targetJob + "&target=" + targetJSON + "&project=" + selectedProject;
+    var params = "?job=" + targetJob + "&project=" + selectedProject;
     var new_uri = url + params;
     if ('WebSocket' in window) {
         ws = new WebSocket(new_uri);
@@ -886,6 +887,9 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
         alert('WebSocket is not supported by this browser.');
         return;
     }
+    //var params = "{\"job\":\"" + targetJob + "\",\"target\":" + targetJSON + ",\"project\":\"" + selectedProject + "\"}";
+    //var params = "{job:\"" + targetJob + "\",target:" + targetJSON + ",project:\"" + selectedProject + "\"}";
+    
     ws.onmessage = function (event) {
         //waitGif.remove();
         var resultJSON = JSON.parse(event.data);
@@ -919,7 +923,8 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
         }
     };
     ws.onopen = function(event){
-        ws.send("starting job"); // need to do this to make it work right with Trend Micro AV
+        ws.send(targetJSON);
+        //ws.send("starting job"); // need to do this to make it work right with Trend Micro AV
     };
     
     ws.onclose = function (event) {
