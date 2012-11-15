@@ -866,8 +866,9 @@ function ajaxCompile(targetJob, targetJSON, waitGif, model){
     });
 }
 
+var ws = null;
+
 function wsCompile(targetJob, targetJSON, waitGif, model){
-    var ws;
     var loc = window.location;
     var verify = false;
     if(targetJob == VCVERIFY){
@@ -917,6 +918,10 @@ function wsCompile(targetJob, targetJSON, waitGif, model){
             handleErrors(resultJSON, model);
         }
     };
+    ws.onopen = function(event){
+        ws.send("starting job"); // need to do this to make it work right with Trend Micro AV
+    };
+    
     ws.onclose = function (event) {
         //console.log(event);
     };
