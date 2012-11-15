@@ -239,7 +239,7 @@ var ComponentNameView = Backbone.View.extend({
                 link.addClass("component_title");
             }
             else{
-                link.addClass("component dir");
+                link.addClass("component dir context");
             }
         }
         else{
@@ -358,11 +358,11 @@ var ComponentView = Backbone.View.extend({
         $(componentNameView.el).children("a").addClass("component_title").removeClass("component dir");
         var item;
         if(this.model.get("realizations").models.length > 0){
-            item = $("<li>").html($("<a class=\"dir\">").html("Realizations"));
+            item = $("<li>").html($("<a class=\"dir context\">").html("Realizations"));
             item.appendTo($(this.el));
         }
         if(this.model.get("enhancements").models.length > 0){
-            item = $("<li>").html($("<a  class=\"dir\">").html("Enhancements"));
+            item = $("<li>").html($("<a  class=\"dir context\">").html("Enhancements"));
             item.appendTo($(this.el));
         }
         //$(this.el).html(html).append(list);
@@ -916,7 +916,7 @@ function initializeComponentMenu(){
 
 function initializeContextMenu(user){
     var contextMenu = $.contextMenu({ 
-        selector: '.dir',
+        selector: '.context',
         build: function($trigger, e){
             
             var items = getSubmenuItems($trigger, user);
