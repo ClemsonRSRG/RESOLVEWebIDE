@@ -23,7 +23,7 @@ public class PasswordRecovery extends Controller {
         
         // Handle Errors
         if (validation.hasErrors()) {
-            render("@PasswordRecovery.index()");
+            render("PasswordRecovery/index.html");
         }
         
         // Mark the user as not authenticated
@@ -48,7 +48,7 @@ public class PasswordRecovery extends Controller {
             render(email);
         } else {
             // Render the main web interface page
-            render("@Interface.index()");
+            render("Interface/index.html");
         }
     }
     

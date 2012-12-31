@@ -28,7 +28,7 @@ public class Confirmation extends Controller  {
             render("Confirmation/index.html", email, firstName, lastName);
         } else {
             // Render the main web interface page
-            render("@Interface.index()");
+            render("Interface/index.html");
         }
     }
     
@@ -42,7 +42,7 @@ public class Confirmation extends Controller  {
             render("Registration/handleSubmit.html");
         } else {
             // Render the main web interface page
-            render("@Interface.index()");
+            render("Interface/index.html");
         }
     }
 }
