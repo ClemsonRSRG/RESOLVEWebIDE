@@ -12,6 +12,26 @@ logs/
 # Derived Java classes
 *.class
 
+###################
+# Temporary Files #
+###################
+
+#gedit
+*~
+
+###################
+# Other VCS Files #
+###################
+
+#subversion
+.svn/
+
+###########################
+# Per-developer IDE Files #
+###########################
+nbactions*.xml
+!nbactions-RSRG-Global.xml
+
 ####################
 # IDE project info #
 ####################
@@ -28,3 +48,15 @@ ace/
 
 # ignore the machine-specific config file
 conf/local-config.conf
+
+######################
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
