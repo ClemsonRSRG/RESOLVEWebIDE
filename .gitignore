@@ -43,6 +43,10 @@ nbactions*.xml
 # netbeans
 nbproject/
 
+# Intellij IDEA
+.idea/
+RESOLVEWebIDE.iml
+
 # Ignore the ace sources for now
 ace/
 
