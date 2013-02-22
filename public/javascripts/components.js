@@ -16,6 +16,7 @@ var myUserComponentListView = null;
 // open in the editor
 var myOpenComponentList = null;
 var selectedProject;
+var userType = null;
 /*
  * The Component is the model where we will store all the data necessary to process
  * the RESOLVE components (regardless of the ModuleKind)
@@ -979,6 +980,24 @@ function initializeUserComponents(userComponents){
             //newComponent.set("id", uc.id);
             newComponent.id = "facilities."+uc.name;
         }
+        else if(uc.type === "t"){
+            var newComponent = new Component({
+                content: uc.content,
+                custom: "true",
+                //enhancements: null,
+                id: "theories."+uc.name,
+                name: uc.name,
+                pkg: uc.pkg,
+                //realizations: null,
+                standard: "false",
+                type: uc.type
+            });
+            myComponentList.add(newComponent);
+            myTheoryList.add(newComponent);
+            myUserComponentList.add(newComponent);
+            //newComponent.set("id", uc.id);
+            newComponent.id = "theories."+uc.name;
+        }
     });
     jQuery.each(ucs, function(index, uc){
         if(uc.type === "e"){
@@ -1790,10 +1809,51 @@ function genNewFacilityForm(parent, d){
     return form;
 }
 
-function genNewTheoryForm(parent){
+function genNewTheoryForm(parent, d){
     var form = $("<div>");
-    var body = "Realization " + name + " for " + selectedCon.name +
-                ";\n\nend " + name + ";";
+    form.html("Please enter a name for the theory:<br/>");
+    var name = $("<input>").attr({id:"fileName",name:"name"});
+    var submit = $("<input>").attr({"type":"button","value":"OK"});
+    var error = $("<span>").addClass("namingError");
+    form.append(name);
+    form.append("<br/>");
+    form.append(error);
+    form.append("<br/>");
+    form.append(submit);
+    submit.click(function(event){
+        event.preventDefault();
+        var newName = name.attr("value");
+        var body = "Precis " + newName + ";\n\nend " + newName + ";";
+        var foundNames = myTheoryList.where({"name":newName});
+        if(foundNames.length == 0){
+            var newComponent = new Component({
+                content: body,
+                custom: "true",
+                enhancements: null,
+                //id: newName+"."+newName,
+                name: newName,
+                pkg: newName,
+                realizations: null,
+                standard: "false",
+                type: "t"
+            });
+            myComponentList.add(newComponent);
+            myTheoryList.add(newComponent);
+            myUserComponentList.add(newComponent)
+            //newComponent.save();
+            var id = newName+"."+newName;
+            newComponent.save(null, {success:function(){
+                    saveSuccess(newComponent, id, d);
+            }});
+            //newComponent.set("id", newName+"."+newName);
+            //displayComponent(newComponent);
+            //d.dialod.dg("destroy");
+        }
+        else{
+            error.html("A component with this name already exists!");
+        }
+        //var name = $(event.currentTarget).attr("name");
+    });
     return form;
 }
 

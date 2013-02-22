@@ -43,6 +43,12 @@ nbactions*.xml
 # netbeans
 nbproject/
 
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
 # Ignore the ace sources for now
 ace/
 
