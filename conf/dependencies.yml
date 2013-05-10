@@ -2,6 +2,8 @@
 
 require:
     - play
+    - play -> secure
+    - play -> crud
     - resolve -> resolve
     - antlr-3.3-complete -> antlr
     - tools -> tools

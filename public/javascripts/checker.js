@@ -30,7 +30,8 @@ function syntaxCheck(openComponent) {
     //selectedFile.tempBody = code;
     openComponent.unset("java");
     errorArray = new Array();
-    antlrParse(openComponent);
+    // YS: Commented out until we can regenerate the new parser javascript
+    // antlrParse(openComponent);
     editorSession.doc._emit("annotate", errorArray);
     /*var gutters = $(".ace_error");
     gutters.die("mouseover");

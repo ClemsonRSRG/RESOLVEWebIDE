@@ -30,3 +30,6 @@ GET     /public/                                staticDir:public
 
 # Import Secure routes
 *       /                                       module:secure
+
+# Import CRUD routes
+*       /profile                                module:crud

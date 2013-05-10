@@ -69,6 +69,11 @@ public class Interface extends Controller {
             proj = Project.getDefault();
             renderArgs.put("selectedProject", proj);
         }
+        
+        /* Check if it is in research mode */
+        String version = (String)Play.configuration.get("version");
+        renderArgs.put("version", version);
+        
         String userComponents = null;
         User currUser = null;
         if(email != null){

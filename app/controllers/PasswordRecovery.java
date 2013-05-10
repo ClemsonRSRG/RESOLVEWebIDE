@@ -16,8 +16,8 @@ public class PasswordRecovery extends Controller {
         validation.required(email);
         validation.email(email);
         
-        User currentUser = User.find("byEmail", email).first();
-        if (currentUser == null) {
+        User user = User.find("byEmail", email).first();
+        if (user == null) {
             validation.addError("email", "Email not found! Please check for spelling!");
         }
         
@@ -30,7 +30,7 @@ public class PasswordRecovery extends Controller {
         User.generateConfirmation(email);
         
         // Send email to recover the password
-        Mails.lostPassword(currentUser);
+        Mails.lostPassword(user);
         
         // Render the email sent page
         render();
@@ -42,19 +42,19 @@ public class PasswordRecovery extends Controller {
         String confirmation = params.get("c_code");
         
         // Check if the user is in our database and has the correct confirmation code
-        User currentUser = User.find("byEmail", email).first();
-        if (currentUser != null && currentUser.confirmationCode.equals(confirmation)) {
+        User user = User.find("byEmail", email).first();
+        if (user != null && user.confirmationCode.equals(confirmation)) {
             // Render password reset page
             render(email);
         } else {
-            // Render the main web interface page
-            render("Interface/index.html");
+            // Render the account error page
+            render("errors/Account_Error.html");
         }
     }
     
     public static void success(String email, String password, String passwordConfirm) {
         // Get user information
-        User currentUser = User.find("byEmail", email).first();
+        User user = User.find("byEmail", email).first();
         
         // Validation Rules for Password
         validation.required(password);
@@ -71,7 +71,7 @@ public class PasswordRecovery extends Controller {
         User.authenticate(email);
             
         // Send password reset email
-        Mails.resetPassword(currentUser);
+        Mails.resetPassword(user);
         
         // Render success page!
         render(email);

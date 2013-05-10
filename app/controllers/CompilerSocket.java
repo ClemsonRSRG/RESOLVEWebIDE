@@ -1,26 +1,22 @@
 package controllers;
 
 import com.google.gson.Gson;
-import compiler.JarBuilderInvoker;
-import compiler.JavaTranslatorInvoker;
-import compiler.VCGeneratorInvoker;
-import compiler.VerifyInvoker;
+import compiler.*;
 import edu.clemson.cs.r2jt.ResolveCompiler;
 import edu.clemson.cs.r2jt.data.MetaFile;
 import edu.clemson.cs.r2jt.data.ModuleKind;
+import edu.clemson.cs.r2jt.proving2.ProverListener;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.persistence.Query;
 import models.User;
 import models.UserComponent;
 import play.Play;
@@ -109,9 +105,9 @@ public class CompilerSocket extends WebSocketController {
         else if(job.compareTo("verify") == 0){
             //Constructing compiler
             String[] args = {"-maindir", compilerMainDir, "-vcs", 
-                        "-listVCs", "-quickprove", "-webinterface",
-                        "-timeout", "5000"};
-            r = new ResolveCompiler(args, umf, userFileMap, myWsWriter);
+                        "-listVCs", "-newprove", "-webinterface",
+                        "-timeout", "2000000"};
+            r = new ResolveCompiler(args, umf, userFileMap);
 
             VerifyInvoker vcgi = new VerifyInvoker(r, args, outbound);
             vcgi.verifyResolve(job);
@@ -165,6 +161,17 @@ public class CompilerSocket extends WebSocketController {
             //outbound.send(gji.generateJava().toString());
             gji.generateJava(job);//event);
         }
+        else if(job.compareTo("analyze") == 0){
+            String[] args = {"-maindir", compilerMainDir, "-webinterface"};
+            r = new ResolveCompiler(args, umf, userFileMap);
+
+            //invoking the translator with the compiler specially created for
+            //translating
+            JavaTranslatorInvoker gji = new JavaTranslatorInvoker(r, args, outbound);
+            //outbound.send(gji.generateJava().toString());
+            gji.generateJava(job);//event);
+        }
+        System.out.println("done!");
         //System.out.println(decode(uc.content));
         //outbound.send(uc.name);
     }
@@ -200,6 +207,9 @@ public class CompilerSocket extends WebSocketController {
         }
         else if(fileType.equals("f")){
             kind = ModuleKind.FACILITY;
+        }
+        else if(fileType.equals("t")){
+            kind = ModuleKind.THEORY;
         }
         return kind;
     }

@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import notifiers.Mails;
 import play.db.jpa.Model;
+import play.libs.Codec;
 
 @Entity
 @Table(name="users")
@@ -38,7 +39,8 @@ public class User extends Model {
         authenticated = false;
         
         // Generate confirmation code
-        confirmationCode = passWordHash(password + email + firstName);
+        String randomID = Codec.UUID();
+        confirmationCode = passWordHash(password + email + firstName + randomID);
         
         // Send email to the new user
         Mails.confirmation(this);
@@ -58,7 +60,8 @@ public class User extends Model {
     
     public static void generateConfirmation(String email) {
         User user = find("byEmail", email).first();
-        String toBeHash = user.password + user.email + user.firstName;
+        String randomID = Codec.UUID();
+        String toBeHash = user.password + user.email + user.firstName + randomID;
         String retval = passWordHash(toBeHash);
         user.confirmationCode = retval;
         user.authenticated = false;

@@ -32,7 +32,7 @@ public class Mails extends Mailer {
         send(user, link);
     }
  
-    public static void lostPassword(User user) {
+    public static void lostPassword(User user) {        
         String confirmationCode = user.confirmationCode;
         setSubject("RESOLVE Web IDE Password Recovery");
         addRecipient(user.email);

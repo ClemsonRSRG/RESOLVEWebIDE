@@ -33,4 +33,18 @@ public class OutboundMessageSender {
         msg += "\"}";
         myOutbound.send(msg);
     }
+    
+    public void sendVcResult(Boolean result, String id){
+        String msg = "{\"job\":\"verify\",\"status\":\"processing\",";
+        msg += "\"result\":{\"id\":\"" + id + "\",\"result\":\"";
+        if(result) {
+            msg += "Proved in ?? ms";
+        }
+        else {
+            msg += "failed in ?? ms";
+        }
+        msg += "\"}";
+        msg += "}";
+        myOutbound.send(msg);
+    }
 }

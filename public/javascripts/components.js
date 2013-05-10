@@ -753,11 +753,17 @@ function displayComponent(component){
     }
     var dataIndex = component.get("index");
     $("#open_component_list>li.selected").removeClass("selected");
-    if(component.get("type") == 't'){
-        // readonly for theory files
-        editor.setReadOnly(true);
+    if(component.get("type") == 't') {
+        if (component.get("custom") === "true" || userType >= 1) {
+            editor.setReadOnly(false);
+        }
+        else {
+            // readonly for theory files
+            editor.setReadOnly(true);
+        }
+        
     }
-    else{
+    else {
         editor.setReadOnly(false);
     }
     editor.setSession(session);

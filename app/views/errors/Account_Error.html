@@ -1,0 +1,24 @@
+#{extends 'main.html' /}
+#{set 'localStyles'}
+    <style>
+        #content {
+            margin: auto;
+        }
+        .information {
+            width: 90%;
+            margin: 0 auto;
+        }
+    </style>
+#{/set}
+
+<div class="information">
+    <h1>Something went wrong!</h1>
+    <p>There seems to be a problem regarding your account. Please contact 
+        <a href="mailto=msitara@clemson.edu">Murali Sitaraman</a> for 
+        additional support. We are sorry for this inconvenience. 
+    </p>
+
+    #{a @Interface.index()}Back to RESOLVE Web IDE#{/a}
+    
+    <br><br>
+</div>

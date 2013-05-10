@@ -5,6 +5,7 @@ var VERIFY = "verify";
 var VCVERIFY = "vcVerify";
 var PRETTYJAVA = "prettyJavaTranslate"
 var PRETTYC = "prettyCTranslate";
+var ANALYZE = "analyze"
 /* 
  * This file contains code for creating and using the ACE editor
  */
@@ -275,6 +276,7 @@ UserControlView = Backbone.View.extend({
         var commands = $("<div>").html("").addClass("controls_commands");
         var zoomControls = $("<div>").addClass("controls_zoom");
         //var translate = $("<button>").html("translate").addClass("translateJava command active shadow");
+        var analyze = $("<button>").html("Analyze").addClass("analyze command active shadow");
         var build = $("<button>").html("Build").addClass("buildJar command active shadow");
         var vcs = $("<button>").html("VCs").addClass("vcs command active shadow");
         var verify = $("<button>").html("Verify").addClass("verify command active shadow");
@@ -296,13 +298,13 @@ UserControlView = Backbone.View.extend({
         var component = this.model.get("componentModel");
         if(component != null){
             // Check to see if you are a super user
-            if (userType >= 1) {
-                var divider = $("<span>").html(" | ").addClass("divider");
-                var commit = $("<button>").html("Commit").addClass("commit command shadow");
-                divider.appendTo(commands);
-                commit.appendTo(commands);
-                commit.attr({disable: "disabled"});
-            }
+            //if (userType >= 1) {
+                //var divider = $("<span>").html(" | ").addClass("divider");
+                //var commit = $("<button>").html("Commit").addClass("commit command shadow");
+                //divider.appendTo(commands);
+                //commit.appendTo(commands);
+                //commit.attr({disable: "disabled"});
+            //}
             if(component.get("type") == "c"){
                 //translate.appendTo(commands);
                 translateRenderbox.appendTo(renderSpan);
@@ -345,9 +347,10 @@ UserControlView = Backbone.View.extend({
                 //renderSpan.appendTo(commands);
             }
             else if(component.get("type") == "t"){
-                
+                analyze.appendTo(commands);
             }
             if(component.get("custom") === "true"){
+                var divider = $("<span>").html(" | ").addClass("divider");
                 var save = $("<button>").html("Save").addClass("save command shadow");
                 var rename = $("<button>").html("Rename").addClass("rename command active shadow");
                 var del = $("<button>").html("Delete").addClass("del command active shadow");
@@ -396,6 +399,7 @@ UserControlView = Backbone.View.extend({
         });
     },
     events: {
+        "click .active.analyze" : "analyze",
         "click .active.translateJava" : "compile",
         "click .active.buildJar" : "compile",
         "click .active.vcs" : "compile",
@@ -403,13 +407,31 @@ UserControlView = Backbone.View.extend({
         "click #translateCheckbox" : "translateJava",
         "click #javaCheckbox" : "translatePrettyJava",
         "click #cCheckbox" : "translatePrettyC",
-        "click .active.commit" : "commit",
+        //"click .active.commit" : "commit",
         "click .active.rename" : "rename",
         "click .active.save" : "save",
         "click .active.del" : "del",
         "click #showJava" : "showJava",
         "click .plus" : "increaseFontSize",
         "click .minus" : "decreaseFontSize"
+    },
+    analyze: function(event){
+        var openComponentTab = $("#open_menu").find(".component_tab.selected");
+        var infoBlock = openComponentTab.find(".componentInfo");
+        var waitGif = addWaitGif(infoBlock);
+        var targetJob = null;
+        var targetButton = $(event.currentTarget);
+        // these classes must match what is assigned in the render function above
+        // for the sevlet backend to understand what to do. That means the servlet
+        // must also match when it checks for the job parameter
+        if(targetButton.hasClass("analyze")){
+            targetJob = ANALYZE;
+        }
+        var model = this.model;
+        var component = model.get("componentModel").clone();
+        component.set("content", encode(editor.getSession().getValue()));
+        var targetJSON = component.toJSON();
+        wsCompile(targetJob, targetJSON, waitGif, model);
     },
     compile: function(event){
         var openComponentTab = $("#open_menu").find(".component_tab.selected");
@@ -1133,6 +1155,12 @@ function analyzeResults(resultJSON, component, waitGif){
         if(component.get("vcs") != null){
             addVcs(component, component.get("vcs"));
         }
+    }
+    else if(resultJSON.job == ANALYZE){
+        EditSession = require("ace/edit_session").EditSession;
+        var analysisResult = resultJSON.result;
+        
+        $("#console-info").append("complete<br/>");
     }
     //waitGif.remove();
 }

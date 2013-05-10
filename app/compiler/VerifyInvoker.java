@@ -34,8 +34,9 @@ public class VerifyInvoker {
         OutboundMessageSender outbound = new OutboundMessageSender(myOutbound);
         //Run the compiler
         try{
-            r.compile(args);
-            
+            // Pass in a listener to the prover
+            WsListener listener = new WsListener(outbound);
+            r.compile(args, listener);            
         }
         catch(Exception ex){
             //obviously not too concerned about this situation ever happening
