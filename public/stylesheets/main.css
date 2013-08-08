@@ -1,51 +1,25 @@
 /*
 * These styles set the sizes of the general containers
 */
+
 #content {
     width:1000px;
     border: 1px solid #AAA;
 }
+
 #user_bar {
     background-color: white;
 }
+
 #menu_bar {
     height: 50px;
     background-color: white;
-    /*margin-bottom: 25px;*/
 }
-#component_views {
-    /*height:510px;*/
-    /*margin-top: 10px;*/
-    /*border: solid 1px gray;*/
-}
+
 #footer {
     text-align: center;
     height: 50px;
     background-color: white;
-}
-.researchbackgroundclass{
-    background-color: lightgray;
-    background-image: url("../images/Research.png");
-    background-repeat: no-repeat;
-    background-position-x: 17px;
-    background-position-y: 50px;
-    background-size: 22.5%;
-}
-.section {
-    clear:left;
-}
-.pane_left {
-    float:left;
-}
-.pane_right {
-    float:right;
-}
-.hidden {
-    display: none;
-}
-
-.namingError {
-    color: red;
 }
 
 .background {
