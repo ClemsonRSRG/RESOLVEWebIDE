@@ -2,12 +2,19 @@
 # Derived files #
 #################
 
-# stuff Play says to ignore
+# Play Generated Files
 tmp/
 modules/
 lib/
 test-result/
 logs/
+project/project/
+project/target/
+target/
+.history
+dist/
+out
+RUNNING_PID
 
 # Derived Java classes
 *.class
@@ -36,11 +43,12 @@ nbactions*.xml
 # IDE project info #
 ####################
 
-# eclipse
+# Eclipse
 .project
 .classpath
+.settings
 
-# netbeans
+# Netbeans
 nbproject/
 
 # IntelliJ
@@ -48,6 +56,11 @@ nbproject/
 *.ipr
 *.iws
 .idea/
+.idea_modules/
+
+####################
+# RESOLVE Web IDE #
+####################
 
 # Ignore the ace sources for now
 ace/
