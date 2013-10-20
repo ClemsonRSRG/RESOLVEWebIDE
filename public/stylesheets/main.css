@@ -2,26 +2,41 @@
 * These styles set the sizes of the general containers
 */
 
+/*
+* CSS for page content
+*/
 #content {
     width:1000px;
     border: 1px solid #AAA;
 }
 
+/*
+* CSS for user bar on main.scala.html
+*/
 #user_bar {
     background-color: white;
 }
 
+/*
+* CSS for menu bar on index.scala.html
+*/
 #menu_bar {
     height: 50px;
     background-color: white;
 }
 
+/*
+* CSS for footer on main.scala.html
+*/
 #footer {
     text-align: center;
     height: 50px;
     background-color: white;
 }
 
+/*
+* CSS for background on main.scala.html
+*/
 .background {
     display: none;
     position: absolute;
@@ -35,4 +50,37 @@
     opacity: 0.65;
     -moz-opacity: 0.65;
     filter:alpha(opacity=65);
+}
+
+/*
+* CSS for research background on main.scala.html
+*/
+.researchbackgroundclass{
+    background-color: lightgray;
+    background-image: url("../images/Research.png");
+    background-repeat: no-repeat;
+    background-position-x: 17px;
+    background-position-y: 50px;
+    background-size: 22.5%;
+}
+
+.section {
+    clear:left;
+}
+
+/*
+* CSS for placing on left, right or hidden when rendering
+*/
+.pane_left {
+    float:left;
+}
+.pane_right {
+    float:right;
+}
+.hidden {
+    display: none;
+}
+
+.namingError {
+    color: red;
 }

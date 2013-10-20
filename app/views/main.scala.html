@@ -10,8 +10,13 @@
     </head>
     <body>
         <div id="content">
+            <!-- Code to display user bar -->
             @views.html.tags.user_bar()
+            <!-- Content passed in gets displayed here -->
             @content
+            <!-- Code to the display footer -->
+            @views.html.tags.footer()
         </div>
+        <div id="background" class="background"></div>
     </body>
 </html>
