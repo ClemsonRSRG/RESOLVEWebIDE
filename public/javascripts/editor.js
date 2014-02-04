@@ -1594,21 +1594,20 @@ function getVcSteps(rawVCs){
 }
 
 function sortByIdAndLine(a, b){
-    var line1 = a.line;
-    var line2 = b.line;
-    
+    var line1 = parseInt(a.line,10);
+    var line2 = parseInt(b.line,10);
+
     var id1 = a.vcID;
     var id2 = b.vcID;
-    
-    return (((typeof line1 === "undefined") || (typeof line2 === "undefined"))? 1 : (
-        (line1 != line2) ? (
-            (line1 < line2) ? -1 : ((line1 > line2) ? 1 : 0)
-        ) : (
-            (id1 < id2) ? -1 : ((id1 > id2) ? 1 : 0)
-        )
-        
-    ));
-    //return ((typeof line1 === "undefined") ? 1 : ((line1 < line2) ? -1 : ((line1 > line2) ? 1 : 0)));
+    if(isNaN(line1) || isNaN(line2)) {
+       if(isNaN(line1)) return 1;
+       if(isNaN(line2)) return -1;
+    }
+    if(line1 < line2) return -1;
+    if(line1 > line2) return 1;
+    if(id1 < id2) return -1;
+    if(id1 > id2) return 1;
+    return 0;
 }
 
 /*$.ui.plugin.add("resizable", "alsoResizeReverse", {
