@@ -1,7 +1,6 @@
 package controllers;
 
 //  Play Imports
-import play.*;
 import play.mvc.*;
 
 // HTML pages from the Views package
@@ -13,12 +12,10 @@ import views.html.*;
 public class Interface extends Controller {
 
     /**
-         * <p>
-         * This renders the main interface page for the WebIDE
-         * </p>
-         *
-         * @return The result of rendering the page
-         */
+     * <p>This renders the main interface page for the WebIDE.</p>
+     *
+     * @return The result of rendering the page
+     */
     public static Result index() {
         return ok(index.render());
     }

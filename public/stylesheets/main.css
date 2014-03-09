@@ -1,33 +1,37 @@
 /*
-* These styles set the sizes of the general containers
-*/
+ * These styles set the sizes of the general containers
+ */
 
 /*
-* CSS for page content
-*/
+ * CSS for page content
+ */
 #content {
-    width:1000px;
+    width: 1000px;
     border: 1px solid #AAA;
 }
 
 /*
-* CSS for user bar on main.scala.html
-*/
+ * CSS for user bar on main.scala.html
+ */
 #user_bar {
     background-color: white;
 }
 
+#user_links {
+    float: right;
+}
+
 /*
-* CSS for menu bar on index.scala.html
-*/
+ * CSS for menu bar on index.scala.html
+ */
 #menu_bar {
     height: 50px;
     background-color: white;
 }
 
 /*
-* CSS for footer on main.scala.html
-*/
+ * CSS for footer on main.scala.html
+ */
 #footer {
     text-align: center;
     height: 50px;
@@ -35,13 +39,13 @@
 }
 
 /*
-* CSS for background on main.scala.html
-*/
+ * CSS for background on main.scala.html
+ */
 .background {
     display: none;
     position: absolute;
     height: 100%;
-    width:100%;
+    width: 100%;
     top: 0;
     left: 0;
     bottom: 0;
@@ -49,38 +53,9 @@
     z-index: 5;
     opacity: 0.65;
     -moz-opacity: 0.65;
-    filter:alpha(opacity=65);
-}
-
-/*
-* CSS for research background on main.scala.html
-*/
-.researchbackgroundclass{
-    background-color: lightgray;
-    background-image: url("../images/Research.png");
-    background-repeat: no-repeat;
-    background-position-x: 17px;
-    background-position-y: 50px;
-    background-size: 22.5%;
+    filter: alpha(opacity=65);
 }
 
 .section {
-    clear:left;
-}
-
-/*
-* CSS for placing on left, right or hidden when rendering
-*/
-.pane_left {
-    float:left;
-}
-.pane_right {
-    float:right;
-}
-.hidden {
-    display: none;
-}
-
-.namingError {
-    color: red;
+    clear: left;
 }
