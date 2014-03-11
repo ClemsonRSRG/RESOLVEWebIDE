@@ -6,36 +6,39 @@
  * CSS for page content
  */
 #content {
-    width: 1000px;
     border: 1px solid #AAA;
+    font-family: sans-serif;
+    font-size: 15px;
+    margin: auto;
+    width: 1000px;
 }
 
 /*
- * CSS for user bar on main.scala.html
+ * CSS for user bar on user_bar.scala.html
  */
 #user_bar {
     background-color: white;
-}
-
-#user_links {
-    float: right;
+    height: 25px;
+    margin: 5px 5px 5px 5px;
 }
 
 /*
- * CSS for menu bar on index.scala.html
+ * CSS for user bar on user_bar.scala.html
  */
 #menu_bar {
-    height: 50px;
     background-color: white;
+    height: 25px;
+    margin: -10px 5px 5px 5px;
 }
 
 /*
- * CSS for footer on main.scala.html
+ * CSS for footer on footer.scala.html
  */
 #footer {
-    text-align: center;
-    height: 50px;
     background-color: white;
+    clear: left;
+    height: 50px;
+    text-align: center;
 }
 
 /*
@@ -54,8 +57,4 @@
     opacity: 0.65;
     -moz-opacity: 0.65;
     filter: alpha(opacity=65);
-}
-
-.section {
-    clear: left;
 }
