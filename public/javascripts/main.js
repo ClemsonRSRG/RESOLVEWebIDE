@@ -1,3 +1,9 @@
+/**
+ * This parses the location string passed in and returns the current base URL we are visiting.
+ *
+ * @param loc The full string web location path.
+ * @returns {string} The base location URL.
+ */
 function getUrl(loc){
     var url = "";
     var pathname = loc.pathname;

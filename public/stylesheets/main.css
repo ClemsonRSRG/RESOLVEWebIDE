@@ -1,10 +1,10 @@
 /*
- * These styles set the sizes of the general containers
+ * These are the CSS used by the RESOLVE WebIDE
+ * Created by: Yu-Shan Sun
+ * Last Modified: March 12, 2014
  */
 
-/*
- * CSS for page content
- */
+/* CSS for page content */
 #content {
     border: 1px solid #AAA;
     font-family: sans-serif;
@@ -13,27 +13,7 @@
     width: 1000px;
 }
 
-/*
- * CSS for user bar on user_bar.scala.html
- */
-#user_bar {
-    background-color: white;
-    height: 25px;
-    margin: 5px 5px 5px 5px;
-}
-
-/*
- * CSS for user bar on user_bar.scala.html
- */
-#menu_bar {
-    background-color: white;
-    height: 25px;
-    margin: -10px 5px 5px 5px;
-}
-
-/*
- * CSS for footer on footer.scala.html
- */
+/* CSS for footer on footer.scala.html */
 #footer {
     background-color: white;
     clear: left;
@@ -41,9 +21,21 @@
     text-align: center;
 }
 
-/*
- * CSS for background on main.scala.html
- */
+/* CSS for menu bar on menu_bar.scala.html */
+#menu_bar {
+    background-color: white;
+    height: 25px;
+    margin: -10px 5px 5px 5px;
+}
+
+/* CSS for user bar on user_bar.scala.html */
+#user_bar {
+    background-color: white;
+    height: 25px;
+    margin: 5px 5px 5px 5px;
+}
+
+/* CSS for background on main.scala.html */
 .background {
     display: none;
     position: absolute;
