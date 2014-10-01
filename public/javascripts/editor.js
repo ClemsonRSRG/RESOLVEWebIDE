@@ -161,6 +161,7 @@ var keywordsTable = new KeywordsHashTable({
     "implies" : "" ,
     "Inductive" : "" ,
     "Inductive_case" : "" ,
+    "initialization" : "",
     "initialization ensures" : "whenever something is declared, the client is guaranteed this statement as its initial value." ,
     "instantiation" : "" ,
     "intersection" : "" ,
@@ -296,13 +297,13 @@ UserControlView = Backbone.View.extend({
         var component = this.model.get("componentModel");
         if(component != null){
             // Check to see if you are a super user
-            if (userType >= 1) {
-                var divider = $("<span>").html(" | ").addClass("divider");
-                var commit = $("<button>").html("Commit").addClass("commit command shadow");
-                divider.appendTo(commands);
-                commit.appendTo(commands);
-                commit.attr({disable: "disabled"});
-            }
+            //if (userType >= 1) {
+               // var divider = $("<span>").html(" | ").addClass("divider");
+               // var commit = $("<button>").html("Commit").addClass("commit command shadow");
+               // divider.appendTo(commands);
+               // commit.appendTo(commands);
+               // commit.attr({disable: "disabled"});
+            // }
             if(component.get("type") == "c"){
                 //translate.appendTo(commands);
                 translateRenderbox.appendTo(renderSpan);
@@ -343,11 +344,13 @@ UserControlView = Backbone.View.extend({
                 cRenderbox.appendTo(renderSpan);
                 cRenderSpan.appendTo(renderSpan);
                 //renderSpan.appendTo(commands);
+                verify.removeClass("active", "shadow");
             }
             else if(component.get("type") == "t"){
                 
             }
             if(component.get("custom") === "true"){
+		var divider = $("<span>").html(" | ").addClass("divider");
                 var save = $("<button>").html("Save").addClass("save command shadow");
                 var rename = $("<button>").html("Rename").addClass("rename command active shadow");
                 var del = $("<button>").html("Delete").addClass("del command active shadow");

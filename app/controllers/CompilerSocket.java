@@ -110,7 +110,7 @@ public class CompilerSocket extends WebSocketController {
             //Constructing compiler
             String[] args = {"-maindir", compilerMainDir, "-vcs", 
                         "-listVCs", "-quickprove", "-webinterface",
-                        "-timeout", "5000"};
+                        "-timeout", "60000"};
             r = new ResolveCompiler(args, umf, userFileMap, myWsWriter);
 
             VerifyInvoker vcgi = new VerifyInvoker(r, args, outbound);

@@ -55,6 +55,12 @@ public class User extends Model {
         currentUser.confirmationCode = "";
         currentUser.save();
     }
+
+    public static void resetPassword(String email, String password) {
+        User user = find("byEmail", email).first();
+        user.password = passWordHash(password);
+        user.save();
+    }
     
     public static void generateConfirmation(String email) {
         User user = find("byEmail", email).first();
