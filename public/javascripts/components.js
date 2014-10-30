@@ -995,9 +995,9 @@ function initializeUserComponents(userComponents){
                 standard: "false",
                 type: uc.type
             });
-			if (parent !== undefined) {
-				parent.get("enhancements").add(newComponent);
-			}
+            if (parent !== undefined) {
+                parent.get("enhancements").add(newComponent);
+            }
             myUserComponentList.add(newComponent)
             //newComponent.set("id", uc.id);
             newComponent.id = uc.pkg+"."+uc.name;
@@ -1019,19 +1019,19 @@ function initializeUserComponents(userComponents){
         newComponent.id = uc.pkg+"."+uc.name;
         if(uc.type === "r"){
             var parent = myComponentList.where({"name":uc.parent})[0];
-			if (parent !== undefined) {
-				parent.get("realizations").add(newComponent);
-			}
+            if (parent !== undefined) {
+                parent.get("realizations").add(newComponent);
+            }
             myUserComponentList.add(newComponent)
         }
         else if(uc.type === "er"){
             var concept = myComponentList.where({"name":uc.pkg})[0];
-			if (concept !== undefined) {
-				parent = concept.get("enhancements").where({"name":uc.parent})[0];
-				if (parent !== undefined) {
-					parent.get("realizations").add(newComponent);
-				}
-			}
+            if (concept !== undefined) {
+                parent = concept.get("enhancements").where({"name":uc.parent})[0];
+                if (parent !== undefined) {
+                    parent.get("realizations").add(newComponent);
+                }
+            }
             myUserComponentList.add(newComponent)
         }
     });
