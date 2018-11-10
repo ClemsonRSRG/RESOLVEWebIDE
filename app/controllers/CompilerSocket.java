@@ -24,6 +24,7 @@ import play.db.jpa.GenericModel.JPAQuery;
 import play.mvc.Http.WebSocketEvent;
 import play.mvc.WebSocketController;
 import webui.utils.WebSocketWriter;
+import play.mvc.Http.WebSocketClose;
 import play.mvc.Http.WebSocketFrame;
 import models.CompilerResult;
 
